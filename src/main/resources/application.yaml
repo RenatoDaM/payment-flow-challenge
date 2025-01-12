@@ -5,8 +5,16 @@ spring:
     password: root
     name: payment_flow
     username: root
+    url: r2dbc:postgresql://localhost:5432/payment_flow
   data:
     mongodb:
       database: payment_flow
       password: root
       username: root
+      port: 27018
+  liquibase:
+    enabled: true
+    change-log: classpath:/config/liquibase/changelog.xml
+    url: jdbc:postgresql://localhost:5432/payment_flow
+    password: root
+    user: root

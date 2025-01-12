@@ -1,3 +1,7 @@
+-- noinspection SqlDialectInspectionForFile
+
+-- noinspection SqlNoDataSourceInspectionForFile
+
 --liquibase formatted sql
 --changeset renatodam:initial-database-setup logicalFilePath:initial-setup
 
@@ -6,7 +10,7 @@ CREATE TABLE users (
     full_name VARCHAR(255) NOT NULL,
     document_number VARCHAR(40) NOT NULL UNIQUE,
     email VARCHAR (255) NOT NULL UNIQUE,
-    password VARCHAR (255) NOT NULL
+    password VARCHAR (255) NOT NULL,
     role VARCHAR(40) NOT NULL,
     balance NUMERIC(10, 2) NOT NULL
 );
@@ -17,6 +21,6 @@ CREATE TABLE transfers (
     payee BIGINT NOT NULL,
     amount NUMERIC(10, 2) NOT NULL,
     transfer_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    FOREIGN KEY (payerid) REFERENCES user(id),
-    FOREIGN KEY (payeeid) REFERENCES user(id)
+    FOREIGN KEY (payer) REFERENCES users(id),
+    FOREIGN KEY (payee) REFERENCES users(id)
 );

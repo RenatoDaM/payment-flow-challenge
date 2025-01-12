@@ -2,16 +2,19 @@ services:
   mongodb:
     image: 'mongo:latest'
     environment:
-      - 'MONGO_INITDB_DATABASE=payment_flow'
-      - 'MONGO_INITDB_ROOT_PASSWORD=root'
-      - 'MONGO_INITDB_ROOT_USERNAME=root'
+      MONGO_INITDB_DATABASE: payment_flow
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_ROOT_USERNAME: root
     ports:
-      - '27018'
+      - 27018:27018
+
   postgres:
-    image: 'postgres:latest'
+    image: postgres:16.3
+    volumes:
+      - ./payment-flow-challenge.sql:/docker-entrypoint-db.d/payment-flow-challenge.sql
     environment:
-      - 'POSTGRES_DB=payment_flow'
-      - 'POSTGRES_PASSWORD=root'
-      - 'POSTGRES_USER=root'
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: root
+      POSTGRES_DB: payment_flow
     ports:
-      - '5432'
+      - 5432:5432

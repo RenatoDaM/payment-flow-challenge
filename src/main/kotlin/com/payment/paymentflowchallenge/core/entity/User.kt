@@ -1,6 +1,6 @@
 package com.payment.paymentflowchallenge.core.entity
 
-import com.payment.paymentflowchallenge.core.common.UserRoleEnum
+import com.payment.paymentflowchallenge.core.common.enums.UserRoleEnum
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 

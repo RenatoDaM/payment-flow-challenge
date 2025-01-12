@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRep
 @EnableReactiveMongoRepositories(
     basePackages = ["com.payment.paymentflowchallenge.dataprovider.database.mongo.repository"]
 )
-class MongoConfig : AbstractReactiveMongoConfiguration() {
+class MongoConfiguration : AbstractReactiveMongoConfiguration() {
 
     override fun getDatabaseName() = "circuit_breaker"
 
