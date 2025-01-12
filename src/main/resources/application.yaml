@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: "payment-flow-challenge"
+  r2dbc:
+    password: root
+    name: payment_flow
+    username: root
+  data:
+    mongodb:
+      database: payment_flow
+      password: root
+      username: root
