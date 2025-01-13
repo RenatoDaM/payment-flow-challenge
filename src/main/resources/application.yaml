@@ -18,3 +18,8 @@ spring:
     url: jdbc:postgresql://localhost:5432/payment_flow
     password: root
     user: root
+  webflux:
+    problemdetails:
+      enabled: true
+  web:
+    locale: en_US

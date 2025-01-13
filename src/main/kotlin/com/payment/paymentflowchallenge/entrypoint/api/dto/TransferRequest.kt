@@ -1,9 +1,13 @@
 package com.payment.paymentflowchallenge.entrypoint.api.dto
 
 import com.payment.paymentflowchallenge.core.entity.Transfer
+import jakarta.validation.constraints.DecimalMin
+import jakarta.validation.constraints.Digits
 import java.math.BigDecimal
 
 data class TransferRequest (
+    @field:DecimalMin(value = "0.0", inclusive = false)
+    @field:Digits(integer=10, fraction=2)
     private val value: BigDecimal,
     private val payer: Long,
     private val payee: Long
