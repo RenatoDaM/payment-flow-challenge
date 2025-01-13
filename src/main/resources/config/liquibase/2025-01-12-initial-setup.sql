@@ -19,7 +19,7 @@ CREATE TABLE transfers (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     payer BIGINT NOT NULL,
     payee BIGINT NOT NULL,
-    amount NUMERIC(10, 2) NOT NULL,
+    value NUMERIC(10, 2) NOT NULL,
     transfer_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     FOREIGN KEY (payer) REFERENCES users(id),
     FOREIGN KEY (payee) REFERENCES users(id)
