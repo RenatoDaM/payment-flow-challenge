@@ -11,7 +11,7 @@ spring:
       database: payment_flow
       password: root
       username: root
-      port: 27018
+      host: localhost
   liquibase:
     enabled: true
     change-log: classpath:/config/liquibase/changelog.xml
