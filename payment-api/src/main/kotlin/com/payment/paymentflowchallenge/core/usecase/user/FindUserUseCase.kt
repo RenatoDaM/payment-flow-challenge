@@ -13,6 +13,5 @@ class FindUserUseCase (
         return userRepository.findById(userId)
             .map { entity -> UserResponse.fromEntity(entity) }
             .switchIfEmpty(Mono.error(IllegalArgumentException("User not found with ID: $userId")))
-
     }
 }

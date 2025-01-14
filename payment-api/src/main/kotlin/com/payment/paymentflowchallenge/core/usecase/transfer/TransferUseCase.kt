@@ -1,5 +1,6 @@
 package com.payment.paymentflowchallenge.core.usecase.transfer
 
+import com.payment.paymentflowchallenge.core.common.enums.UserRoleEnum
 import com.payment.paymentflowchallenge.core.entity.Transfer
 import com.payment.paymentflowchallenge.core.usecase.user.FindUserUseCase
 import com.payment.paymentflowchallenge.core.usecase.user.UpdateUserBalanceUseCase
@@ -32,9 +33,12 @@ class TransferUseCase (
                 val payer = tuple.t1
                 val payee = tuple.t2
 
-                if (payer.balance < transferRequest.value) {
+                val hasEnoughMoney = payer.balance > transferRequest.value
+                if (!hasEnoughMoney)
                     return@flatMap Mono.error<Transfer>(IllegalArgumentException("payer doesn't have enough money"))
-                }
+
+                if (payer.role == UserRoleEnum.MERCHANT)
+                    return@flatMap Mono.error<Transfer>(IllegalArgumentException("merchants can not do transfers"))
 
                 val payerFinalBalance = payer.balance - transferRequest.value
                 val payeeFinalBalance = payee.balance + transferRequest.value
@@ -47,5 +51,4 @@ class TransferUseCase (
             log.info("transfer realized with success $it")
         }
     }
-
 }
