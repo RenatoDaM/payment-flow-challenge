@@ -33,12 +33,16 @@ class TransferUseCase (
                 val payer = tuple.t1
                 val payee = tuple.t2
 
+                //todo separar cada validação em uma função privada que é chamada aqui
+                //todo enviar pra fila de notificação
+                //todo separar e deixar mais modular, no fim dar zip pra que aguarde tudo
+
                 val hasEnoughMoney = payer.balance > transferRequest.value
                 if (!hasEnoughMoney)
                     return@flatMap Mono.error<Transfer>(IllegalArgumentException("payer doesn't have enough money"))
 
                 if (payer.role == UserRoleEnum.MERCHANT)
-                    return@flatMap Mono.error<Transfer>(IllegalArgumentException("merchants can not do transfers"))
+                    return@flatMap Mono.error<Transfer>(IllegalArgumentException("merchants cannot do transfers"))
 
                 val payerFinalBalance = payer.balance - transferRequest.value
                 val payeeFinalBalance = payee.balance + transferRequest.value
