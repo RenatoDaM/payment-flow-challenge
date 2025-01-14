@@ -39,4 +39,12 @@ class RestControllerAdvice: ResponseEntityExceptionHandler() {
         problemDetail.title = "External Service Error"
         return problemDetail
     }
+
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun handleIllegalArgumentException(ex: IllegalArgumentException): ProblemDetail {
+        val problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid input or argument.")
+        problemDetail.detail = "Invalid input provided: ${ex.message}"
+        problemDetail.title = "Bad Request Error"
+        return problemDetail
+    }
 }

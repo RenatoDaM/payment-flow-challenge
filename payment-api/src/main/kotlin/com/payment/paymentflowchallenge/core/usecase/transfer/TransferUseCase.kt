@@ -33,7 +33,7 @@ class TransferUseCase (
                 val payee = tuple.t2
 
                 if (payer.balance < transferRequest.value) {
-                    return@flatMap Mono.error<Transfer>(IllegalArgumentException("Payer doesn't have enough money"))
+                    return@flatMap Mono.error<Transfer>(IllegalArgumentException("payer doesn't have enough money"))
                 }
 
                 val payerFinalBalance = payer.balance - transferRequest.value
