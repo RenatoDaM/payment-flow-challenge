@@ -9,9 +9,9 @@ import java.time.LocalDateTime
 @Table("transfers")
 data class Transfer(
     @Id val id: Long?,
-    private val value: BigDecimal,
-    private val payer: Long,
-    private val payee: Long,
+    val value: BigDecimal,
+    val payer: Long,
+    val payee: Long,
     @CreatedDate
-    private val transferDate: LocalDateTime?
+    val transferDate: LocalDateTime?
 )

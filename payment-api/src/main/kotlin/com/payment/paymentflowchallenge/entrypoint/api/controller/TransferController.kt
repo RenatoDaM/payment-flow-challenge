@@ -1,5 +1,6 @@
 package com.payment.paymentflowchallenge.entrypoint.api.controller
 
+import com.payment.paymentflowchallenge.core.entity.Transfer
 import com.payment.paymentflowchallenge.core.usecase.transfer.TransferUseCase
 import com.payment.paymentflowchallenge.entrypoint.api.dto.TransferRequest
 import org.springframework.http.ResponseEntity
@@ -11,9 +12,11 @@ import reactor.core.publisher.Mono
 @RestController
 class TransferController(private val transferUseCase: TransferUseCase) {
   @PostMapping("/transfer")
-  fun transfer(@RequestBody transferRequest: TransferRequest): Mono<ResponseEntity<Void>> {
+  fun transfer(@RequestBody transferRequest: TransferRequest): Mono<ResponseEntity<Transfer>> {
     return transferUseCase.transfer(transferRequest)
-      .then(Mono.just(ResponseEntity.ok().build()))
+      .flatMap { transfer ->
+        Mono.just(ResponseEntity.ok().body(transfer))
+      }
   }
 }
 

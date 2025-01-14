@@ -43,7 +43,9 @@ class TransferUseCase (
                     .then(updateUserBalanceUseCase.updateUserBalanceById(payee.id, payeeFinalBalance))
                     .then(transferRepository.save(transferRequest.toEntity()))
             }
-        )
+        ).doOnSuccess {
+            log.info("transfer realized with success $it")
+        }
     }
 
 }
