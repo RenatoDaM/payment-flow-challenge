@@ -31,6 +31,7 @@ subprojects {
     group = "com.cinema"
     version = "0.0.1-SNAPSHOT"
     dependencies {
+        implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0")
         implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
         implementation("org.springframework.boot:spring-boot-starter-hateoas")
         implementation("org.springframework.boot:spring-boot-starter-webflux")

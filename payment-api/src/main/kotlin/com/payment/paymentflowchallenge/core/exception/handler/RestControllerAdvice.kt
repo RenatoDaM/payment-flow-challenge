@@ -6,7 +6,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.result.method.annotation.ResponseEntityExceptionHandler
+
 
 @RestControllerAdvice
 class RestControllerAdvice: ResponseEntityExceptionHandler() {
@@ -27,6 +29,14 @@ class RestControllerAdvice: ResponseEntityExceptionHandler() {
         }
 
         problemDetail.setProperty("errors", errorDetails)
+        return problemDetail
+    }
+
+    @ExceptionHandler(WebClientResponseException::class)
+    fun handleWebClientResponseException(ex: WebClientResponseException): ProblemDetail {
+        val problemDetail = ProblemDetail.forStatusAndDetail(ex.statusCode, "Error from external service")
+        problemDetail.detail = "Error from external service: " + ex.message
+        problemDetail.title = "External Service Error"
         return problemDetail
     }
 }

@@ -1,17 +1,16 @@
 package com.payment.paymentflowchallenge.core.usecase.user
 
 import com.payment.paymentflowchallenge.dataprovider.database.postgres.repository.UserRepository
-import com.payment.paymentflowchallenge.entrypoint.api.dto.CreateUserRequest
 import com.payment.paymentflowchallenge.entrypoint.api.dto.UserResponse
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
 @Service
-class CreateUserUseCase (
+class FindUserUseCase (
     private val userRepository: UserRepository
 ) {
-    fun createUser(createUserRequest: CreateUserRequest): Mono<UserResponse> {
-        return userRepository.save(createUserRequest.toEntity())
-            .map { user -> UserResponse.fromEntity(user) }
+    fun findUserById(userId: Long): Mono<UserResponse> {
+        return userRepository.findById(userId)
+            .map { entity -> UserResponse.fromEntity(entity) }
     }
 }

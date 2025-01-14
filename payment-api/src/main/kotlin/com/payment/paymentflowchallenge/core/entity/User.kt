@@ -13,5 +13,5 @@ data class User(
     val email: String,
     private val password: String,
     val role: UserRoleEnum,
-    val balance: BigDecimal
+    var balance: BigDecimal
 )

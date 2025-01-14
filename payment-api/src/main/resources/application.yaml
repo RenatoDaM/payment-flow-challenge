@@ -23,3 +23,9 @@ spring:
       enabled: true
   web:
     locale: en_US
+logging:
+  level:
+    org:
+      springframework:
+        r2dbc: DEBUG
+

@@ -4,17 +4,17 @@ import com.payment.paymentflowchallenge.core.common.enums.UserRoleEnum
 import com.payment.paymentflowchallenge.core.entity.User
 import java.math.BigDecimal
 
-class CreateUserResponse(
-    private val id: Long,
-    private val fullName: String,
-    private val documentNumber: String,
-    private val email: String,
-    private val role: UserRoleEnum,
-    private val balance: BigDecimal
+class UserResponse(
+    val id: Long,
+    val fullName: String,
+    val documentNumber: String,
+    val email: String,
+    val role: UserRoleEnum,
+    val balance: BigDecimal
 ) {
     companion object {
-        fun fromEntity(user: User): CreateUserResponse {
-            return CreateUserResponse(
+        fun fromEntity(user: User): UserResponse {
+            return UserResponse(
                 user.id!!,
                 user.fullName,
                 user.documentNumber,
