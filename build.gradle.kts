@@ -39,6 +39,7 @@ subprojects {
         implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
         implementation("org.jetbrains.kotlin:kotlin-reflect")
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+        implementation("org.springframework.kafka:spring-kafka:3.3.1")
         compileOnly("org.projectlombok:lombok")
         annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
         annotationProcessor("org.projectlombok:lombok")
