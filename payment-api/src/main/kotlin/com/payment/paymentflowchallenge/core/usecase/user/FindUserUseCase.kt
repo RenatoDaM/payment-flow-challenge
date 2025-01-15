@@ -1,7 +1,7 @@
 package com.payment.paymentflowchallenge.core.usecase.user
 
+import com.payment.paymentflowchallenge.core.entity.User
 import com.payment.paymentflowchallenge.dataprovider.database.postgres.repository.UserRepository
-import com.payment.paymentflowchallenge.entrypoint.api.dto.UserResponse
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
@@ -9,9 +9,8 @@ import reactor.core.publisher.Mono
 class FindUserUseCase (
     private val userRepository: UserRepository
 ) {
-    fun findUserById(userId: Long): Mono<UserResponse> {
+    fun findUserById(userId: Long): Mono<User> {
         return userRepository.findById(userId)
-            .map { entity -> UserResponse.fromEntity(entity) }
             .switchIfEmpty(Mono.error(IllegalArgumentException("User not found with ID: $userId")))
     }
 }

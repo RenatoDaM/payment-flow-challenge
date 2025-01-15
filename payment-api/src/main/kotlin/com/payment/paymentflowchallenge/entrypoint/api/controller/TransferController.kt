@@ -13,10 +13,8 @@ import reactor.core.publisher.Mono
 class TransferController(private val transferUseCase: TransferUseCase) {
   @PostMapping("/transfer")
   fun transfer(@RequestBody transferRequest: TransferRequest): Mono<ResponseEntity<Transfer>> {
-    return transferUseCase.transfer(transferRequest)
-      .flatMap { transfer ->
-        Mono.just(ResponseEntity.ok().body(transfer))
-      }
+    return transferUseCase.transfer(transferRequest.toEntity())
+      .map { ResponseEntity.ok(it) }
   }
 }
 

@@ -14,5 +14,6 @@ class UserController(private val createUserUseCase: CreateUserUseCase) {
     @PostMapping( "/users")
     fun transfer(@Valid @RequestBody createUserRequest: CreateUserRequest): Mono<UserResponse> {
         return createUserUseCase.createUser(createUserRequest)
+            .map { user -> UserResponse.fromEntity(user) }
     }
 }

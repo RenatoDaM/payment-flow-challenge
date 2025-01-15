@@ -1,5 +1,6 @@
 package com.payment.paymentflowchallenge.core.usecase.user
 
+import com.payment.paymentflowchallenge.core.entity.User
 import com.payment.paymentflowchallenge.dataprovider.database.postgres.repository.UserRepository
 import com.payment.paymentflowchallenge.entrypoint.api.dto.CreateUserRequest
 import com.payment.paymentflowchallenge.entrypoint.api.dto.UserResponse
@@ -10,8 +11,7 @@ import reactor.core.publisher.Mono
 class CreateUserUseCase (
     private val userRepository: UserRepository
 ) {
-    fun createUser(createUserRequest: CreateUserRequest): Mono<UserResponse> {
+    fun createUser(createUserRequest: CreateUserRequest): Mono<User> {
         return userRepository.save(createUserRequest.toEntity())
-            .map { user -> UserResponse.fromEntity(user) }
     }
 }
