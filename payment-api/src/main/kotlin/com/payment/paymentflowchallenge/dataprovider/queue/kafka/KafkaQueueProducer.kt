@@ -27,9 +27,9 @@ class KafkaQueueProducer(
     fun send(record: ProducerRecord<String, String>) {
         producer.send(record) { metadata, exception ->
             if (exception != null) {
-                println("Erro ao enviar mensagem: ${exception.message}")
+                println("Error sending message: ${exception.message}")
             } else {
-                println("Mensagem enviada com sucesso para o tópico ${metadata.topic()} na partição ${metadata.partition()} com offset ${metadata.offset()}")
+                println("Message sent successfully to topic ${metadata.topic()} on partition ${metadata.partition()} with offset ${metadata.offset()}")
             }
         }
     }
@@ -38,9 +38,9 @@ class KafkaQueueProducer(
         try {
             val newTopic = NewTopic(topicName, partitions, replicationFactor)
             adminClient.createTopics(listOf(newTopic)).all().get()
-            println("Tópico '$topicName' criado com sucesso.")
+            println("Topic '$topicName' created successfully.")
         } catch (e: Exception) {
-            println("Erro ao criar o tópico: ${e.message}")
+            println("Error at topic creation with name: $topicName")
         }
     }
 }
