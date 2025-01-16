@@ -2,6 +2,7 @@ package com.payment.paymentflowchallenge.configuration
 
 import org.apache.kafka.clients.admin.Admin
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.io.IOException
@@ -40,3 +41,14 @@ class KafkaConfiguration {
         }
     }
 }
+
+@ConfigurationProperties(prefix = "kafka")
+data class TopicInitializerProperties(
+    val topics: List<TopicSetupSpecification>
+)
+
+data class TopicSetupSpecification(
+    val name: String,
+    val partitions: Int,
+    val replicationFactor: Short = 1
+)

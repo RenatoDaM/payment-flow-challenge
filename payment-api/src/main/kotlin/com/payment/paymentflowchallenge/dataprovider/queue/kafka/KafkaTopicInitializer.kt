@@ -1,6 +1,6 @@
 package com.payment.paymentflowchallenge.dataprovider.queue.kafka
 
-import com.payment.paymentflowchallenge.dataprovider.queue.kafka.configuration.KafkaConfig
+import com.payment.paymentflowchallenge.configuration.TopicInitializerProperties
 import jakarta.annotation.PostConstruct
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 @Component
 class KafkaTopicInitializer(
     private val kafkaQueueProducer: KafkaQueueProducer,
-    private val kafkaConfig: KafkaConfig
+    private val kafkaConfig: TopicInitializerProperties
 ) {
     private final val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
