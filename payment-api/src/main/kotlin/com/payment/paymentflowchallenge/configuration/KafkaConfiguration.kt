@@ -44,10 +44,10 @@ class KafkaConfiguration {
 
 @ConfigurationProperties(prefix = "kafka")
 data class TopicInitializerProperties(
-    val topics: List<TopicSetupSpecification>
+    val topics: List<TopicSpecification>
 )
 
-data class TopicSetupSpecification(
+data class TopicSpecification(
     val name: String,
     val partitions: Int,
     val replicationFactor: Short = 1
