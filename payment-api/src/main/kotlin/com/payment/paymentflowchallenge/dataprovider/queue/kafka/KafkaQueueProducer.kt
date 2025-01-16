@@ -5,7 +5,11 @@ import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
+import org.apache.kafka.common.errors.TopicExistsException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.util.concurrent.ExecutionException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -15,6 +19,7 @@ class KafkaQueueProducer(
     private val producer: KafkaProducer<String, String>,
     private val adminClient: Admin
 ) {
+    private final val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
     suspend fun <K, V> KafkaProducer<K, V>.asyncSend(record: ProducerRecord<K, V>) =
         suspendCoroutine<RecordMetadata> { continuation ->
@@ -27,9 +32,9 @@ class KafkaQueueProducer(
     fun send(record: ProducerRecord<String, String>) {
         producer.send(record) { metadata, exception ->
             if (exception != null) {
-                println("Error sending message: ${exception.message}")
+                log.info("Error sending message: ${exception.message}")
             } else {
-                println("Message sent successfully to topic ${metadata.topic()} on partition ${metadata.partition()} with offset ${metadata.offset()}")
+                log.info("Message sent successfully to topic ${metadata.topic()} on partition ${metadata.partition()} with offset ${metadata.offset()}")
             }
         }
     }
@@ -38,9 +43,11 @@ class KafkaQueueProducer(
         try {
             val newTopic = NewTopic(topicName, partitions, replicationFactor)
             adminClient.createTopics(listOf(newTopic)).all().get()
-            println("Topic '$topicName' created successfully.")
-        } catch (e: Exception) {
-            println("Error at topic creation with name: $topicName")
+            log.info("Topic '$topicName' created successfully.")
+        } catch (e: ExecutionException) {
+            if (e.cause is TopicExistsException) {
+                log.warn("Topic '$topicName' already exists. If this occurs during startup, it can be safely ignored.")
+            }
         }
     }
 }

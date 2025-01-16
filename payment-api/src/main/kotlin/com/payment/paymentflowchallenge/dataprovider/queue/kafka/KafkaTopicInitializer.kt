@@ -1,23 +1,27 @@
 package com.payment.paymentflowchallenge.dataprovider.queue.kafka
 
+import com.payment.paymentflowchallenge.dataprovider.queue.kafka.configuration.KafkaConfig
 import jakarta.annotation.PostConstruct
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
 class KafkaTopicInitializer(
-    private val kafkaQueueProducer: KafkaQueueProducer
+    private val kafkaQueueProducer: KafkaQueueProducer,
+    private val kafkaConfig: KafkaConfig
 ) {
+    private final val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
     @PostConstruct
     fun init() {
+        val requiredTopics = kafkaConfig.topics
 
-        val topics = listOf(
-            Pair("topic-1", 3),
-            Pair("topic-2", 2)
-        )
+        val topicNames = requiredTopics.joinToString(", ") { it.name }
+        log.info("Creating the required topics if they don't exist: $topicNames")
 
-        topics.forEach { (topicName, partitions) ->
-            kafkaQueueProducer.createTopic(topicName, partitions)
+        requiredTopics.forEach { topicConfig ->
+            kafkaQueueProducer.createTopic(topicConfig.name, topicConfig.partitions, topicConfig.replicationFactor)
         }
     }
 }

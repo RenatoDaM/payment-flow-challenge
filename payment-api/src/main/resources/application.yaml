@@ -29,3 +29,8 @@ logging:
       springframework:
         r2dbc: DEBUG
 
+kafka:
+  topics:
+    - name: "transfer-notification"
+      partitions: 1
+      replicationFactor: 1
