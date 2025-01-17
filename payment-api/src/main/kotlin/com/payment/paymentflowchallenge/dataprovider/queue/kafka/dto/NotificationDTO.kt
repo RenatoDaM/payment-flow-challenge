@@ -1,4 +1,4 @@
-package com.payment.paymentflowchallenge.dataprovider.queue.kafka
+package com.payment.paymentflowchallenge.dataprovider.queue.kafka.dto
 
 import lombok.AllArgsConstructor
 import lombok.Builder

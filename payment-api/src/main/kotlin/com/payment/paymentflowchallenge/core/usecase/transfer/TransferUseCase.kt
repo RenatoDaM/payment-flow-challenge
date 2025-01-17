@@ -1,7 +1,6 @@
 package com.payment.paymentflowchallenge.core.usecase.transfer
 
 import com.payment.paymentflowchallenge.core.common.enums.UserRoleEnum
-import com.payment.paymentflowchallenge.core.common.util.toJson
 import com.payment.paymentflowchallenge.core.entity.Transfer
 import com.payment.paymentflowchallenge.core.entity.User
 import com.payment.paymentflowchallenge.core.usecase.user.FindUserUseCase
@@ -9,8 +8,7 @@ import com.payment.paymentflowchallenge.core.usecase.user.UpdateUserBalanceUseCa
 import com.payment.paymentflowchallenge.dataprovider.client.bank.AuthServiceClient
 import com.payment.paymentflowchallenge.dataprovider.database.postgres.repository.TransferRepository
 import com.payment.paymentflowchallenge.dataprovider.queue.kafka.KafkaQueueProducer
-import com.payment.paymentflowchallenge.dataprovider.queue.kafka.NotificationDTO
-import org.apache.kafka.clients.producer.ProducerRecord
+import com.payment.paymentflowchallenge.dataprovider.queue.kafka.dto.NotificationDTO
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
