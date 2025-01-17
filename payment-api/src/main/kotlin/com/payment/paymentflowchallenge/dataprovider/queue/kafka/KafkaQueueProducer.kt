@@ -29,7 +29,8 @@ class KafkaQueueProducer(
                     ?: continuation.resume(metadata)
             }
         }
-
+    
+    // todo need to assured that everything is async
     fun send(topicName: String, messageValue: Any) {
         val jsonMessage = messageValue.toJson()
         // todo better treatment, cannot go null or something like that to kafka, like was happening

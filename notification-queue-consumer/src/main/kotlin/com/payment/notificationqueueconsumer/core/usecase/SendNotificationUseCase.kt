@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 class SendNotificationUseCase (
     private val notificationServiceClient: NotificationServiceClient
 ) {
-    suspend fun sendNotification(notificationDTO: NotificationDTO) {
+    fun sendNotification(notificationDTO: NotificationDTO) {
         notificationServiceClient.notify(notificationDTO)
     }
 }

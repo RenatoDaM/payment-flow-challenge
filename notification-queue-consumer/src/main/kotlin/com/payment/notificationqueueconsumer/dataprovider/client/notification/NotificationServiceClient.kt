@@ -6,18 +6,19 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBodilessEntity
+import reactor.core.publisher.Mono
 
 @Service
 class NotificationServiceClient (
     @Qualifier("notificationService") private val authServiceClient: WebClient
 ) {
 
-    suspend fun notify(notificationDTO: NotificationDTO): ResponseEntity<Void>? {
+    fun notify(notificationDTO: NotificationDTO): Mono<ResponseEntity<Void>> {
         return authServiceClient.post()
             .uri("/notify")
             .bodyValue(notificationDTO)
             .retrieve()
-            .awaitBodilessEntity()
+            .toBodilessEntity()
     }
 
 }

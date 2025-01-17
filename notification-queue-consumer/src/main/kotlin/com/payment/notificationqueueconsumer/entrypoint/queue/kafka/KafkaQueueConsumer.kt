@@ -20,7 +20,9 @@ class KafkaQueueConsumer(
 
     private tailrec fun <T> repeatUntilSome(block: () -> T?): T = block() ?: repeatUntilSome(block)
 
-    suspend fun consumeMessages() {
+    // todo fix the poll. it's not really in loop as expected
+    @PostConstruct
+    fun consumeMessages() {
         kafkaConsumer.use { consumer ->
             consumer.subscribe(listOf("transfer-notification"))
             val message = repeatUntilSome {
@@ -30,13 +32,6 @@ class KafkaQueueConsumer(
             val serializedMessage = message.fromJson(NotificationDTO::class.java)
 
             sendNotificationUseCase.sendNotification(serializedMessage)
-        }
-    }
-
-    @PostConstruct
-    fun startConsuming() {
-        CoroutineScope(Dispatchers.IO).launch {
-            consumeMessages()
         }
     }
 }
