@@ -1,9 +1,12 @@
 package com.payment.notificationqueueconsumer.entrypoint.queue.kafka
 
-import com.fasterxml.jackson.core.type.TypeReference
 import com.payment.notificationqueueconsumer.core.common.fromJson
 import com.payment.notificationqueueconsumer.core.usecase.SendNotificationUseCase
 import com.payment.notificationqueueconsumer.dataprovider.client.notification.dto.NotificationDTO
+import jakarta.annotation.PostConstruct
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.springframework.context.annotation.Configuration
 import kotlin.time.Duration.Companion.milliseconds
@@ -15,11 +18,11 @@ class KafkaQueueConsumer(
     private val sendNotificationUseCase: SendNotificationUseCase
 ) {
 
-    fun <T> repeatUntilSome(block: () -> T?): T = block() ?: repeatUntilSome(block)
+    private tailrec fun <T> repeatUntilSome(block: () -> T?): T = block() ?: repeatUntilSome(block)
 
     suspend fun consumeMessages() {
         kafkaConsumer.use { consumer ->
-            consumer.subscribe(listOf("test"))
+            consumer.subscribe(listOf("transfer-notification"))
             val message = repeatUntilSome {
                 consumer.poll(400.milliseconds.toJavaDuration()).map { it.value() }.firstOrNull()
             }
@@ -27,6 +30,13 @@ class KafkaQueueConsumer(
             val serializedMessage = message.fromJson(NotificationDTO::class.java)
 
             sendNotificationUseCase.sendNotification(serializedMessage)
+        }
+    }
+
+    @PostConstruct
+    fun startConsuming() {
+        CoroutineScope(Dispatchers.IO).launch {
+            consumeMessages()
         }
     }
 }
