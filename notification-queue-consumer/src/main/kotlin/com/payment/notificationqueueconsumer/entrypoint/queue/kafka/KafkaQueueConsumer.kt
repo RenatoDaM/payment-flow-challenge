@@ -21,6 +21,4 @@ class KafkaQueueConsumer(
             println("Received message: $message")
         }
     }
-
-
 }

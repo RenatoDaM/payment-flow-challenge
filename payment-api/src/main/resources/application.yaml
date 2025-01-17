@@ -34,3 +34,7 @@ kafka:
     - name: "transfer-notification"
       partitions: 1
       replicationFactor: 1
+
+auth:
+  service:
+    base-url: https://util.devi.tools/api/v1

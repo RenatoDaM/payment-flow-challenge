@@ -1,4 +1,4 @@
-package com.payment.paymentflowchallenge.configuration
+package com.payment.notificationqueueconsumer.configuration
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -8,13 +8,13 @@ import org.springframework.web.reactive.function.client.WebClient
 @Configuration
 class WebClientConfiguration {
 
-    @Value("\${auth.service.base-url}")
-    private lateinit var authServiceBaseUrl: String
+    @Value("\${notification.service.base-url}")
+    private lateinit var notificationServiceBaseUrl: String
 
-    @Bean(name = ["authService"])
-    fun authServiceClient(): WebClient {
+    @Bean(name = ["notificationService"])
+    fun notificationServiceClient(): WebClient {
         return WebClient.builder()
-            .baseUrl(authServiceBaseUrl)
+            .baseUrl(notificationServiceBaseUrl)
             .build()
     }
 
