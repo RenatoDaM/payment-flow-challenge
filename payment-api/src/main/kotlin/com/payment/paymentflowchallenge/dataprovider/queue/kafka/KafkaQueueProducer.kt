@@ -1,5 +1,6 @@
 package com.payment.paymentflowchallenge.dataprovider.queue.kafka
 
+import com.payment.paymentflowchallenge.core.common.util.toJson
 import org.apache.kafka.clients.admin.Admin
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -29,8 +30,9 @@ class KafkaQueueProducer(
             }
         }
 
-    fun send(record: ProducerRecord<String, String>) {
-        producer.send(record) { metadata, exception ->
+    fun send(topicName: String, messageValue: Any) {
+        val jsonMessage = messageValue.toJson()
+        producer.send(ProducerRecord(topicName, jsonMessage)) { metadata, exception ->
             if (exception != null) {
                 log.info("Error sending message: ${exception.message}")
             } else {
