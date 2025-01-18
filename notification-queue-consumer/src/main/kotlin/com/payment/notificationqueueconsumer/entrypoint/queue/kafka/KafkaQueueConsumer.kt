@@ -4,9 +4,6 @@ import com.payment.notificationqueueconsumer.core.common.fromJson
 import com.payment.notificationqueueconsumer.core.usecase.SendNotificationUseCase
 import com.payment.notificationqueueconsumer.dataprovider.client.notification.dto.NotificationDTO
 import jakarta.annotation.PostConstruct
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.springframework.context.annotation.Configuration
 import kotlin.time.Duration.Companion.milliseconds
@@ -18,20 +15,20 @@ class KafkaQueueConsumer(
     private val sendNotificationUseCase: SendNotificationUseCase
 ) {
 
-    private tailrec fun <T> repeatUntilSome(block: () -> T?): T = block() ?: repeatUntilSome(block)
+/*    private tailrec fun <T> repeatUntilSome(block: () -> T?): T = block() ?: repeatUntilSome(block)*/
 
-    // todo fix the poll. it's not really in loop as expected
     @PostConstruct
     fun consumeMessages() {
+        kafkaConsumer.subscribe(listOf("transfer-notification"))
         kafkaConsumer.use { consumer ->
-            consumer.subscribe(listOf("transfer-notification"))
-            val message = repeatUntilSome {
-                consumer.poll(400.milliseconds.toJavaDuration()).map { it.value() }.firstOrNull()
+            while (true) {
+                consumer.poll(400.milliseconds.toJavaDuration()).forEach {
+                    val message = it.value()
+                    println("Received message: $message")
+                    val serializedMessage = message.fromJson(NotificationDTO::class.java)
+                    sendNotificationUseCase.sendNotification(serializedMessage)
+                }
             }
-            println("Received message: $message")
-            val serializedMessage = message.fromJson(NotificationDTO::class.java)
-
-            sendNotificationUseCase.sendNotification(serializedMessage)
         }
     }
 }
