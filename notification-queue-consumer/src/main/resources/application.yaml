@@ -7,5 +7,35 @@ notification:
   service:
     base-url: https://util.devi.tools/api/v1
 
+
 server:
   port: 8081
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowType: TIME_BASED
+        slidingWindowSize: 100
+        permittedNumberOfCallsInHalfOpenState: 3
+        slowCallDurationThreshold: 4s
+        slowCallRateThreshold: 50
+        failureRateThreshold: 3
+        waitDurationInOpenState: 10s
+        minimumNumberOfCalls: 3
+    instances:
+      notification-service-A:
+        baseConfig: default
+
+  retry:
+    instances:
+      notification-service-A:
+        maxAttempts: 3
+        waitDuration: 10s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.io.IOException
+        ##ignoreExceptions:
+        ##  - java.io.NotActiveException //just an example

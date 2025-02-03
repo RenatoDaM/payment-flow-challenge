@@ -8,9 +8,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Configuration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.toJavaDuration
+
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 
 @Configuration
 class KafkaQueueConsumer(
@@ -18,7 +22,7 @@ class KafkaQueueConsumer(
     private val sendNotificationUseCase: SendNotificationUseCase
 ) {
 
-/*    private tailrec fun <T> repeatUntilSome(block: () -> T?): T = block() ?: repeatUntilSome(block)*/
+    private val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
     @PostConstruct
     private fun consumeMessages() {
@@ -27,12 +31,22 @@ class KafkaQueueConsumer(
             kafkaConsumer.use { consumer ->
                 while (true) {
                     val messages = consumer.poll(400.milliseconds.toJavaDuration())
-                    messages.forEach {
-                        val message = it.value()
-                        println("Received message: $message")
-                        val serializedMessage = message.fromJson(NotificationDTO::class.java)
-                        sendNotificationUseCase.sendNotification(serializedMessage)
-                        // kafkaConsumer.commitAsync() pode ser usado para confirmação assíncrona
+                    messages.forEach { record ->
+                        launch {
+                            val message = record.value()
+                            log.info("Received message: $message")
+                            val serializedMessage = message.fromJson(NotificationDTO::class.java)
+
+                            try {
+                                sendNotificationUseCase.sendNotification(serializedMessage)
+                                    .awaitSingleOrNull()
+
+                                log.info("Committing message: $message")
+                                kafkaConsumer.commitAsync()
+                            } catch (e: Exception) {
+                                log.error("Error processing message: ${e.message}", e)
+                            }
+                        }
                     }
                 }
             }
