@@ -5,7 +5,7 @@ import com.payment.paymentflowchallenge.core.entity.Transfer
 import com.payment.paymentflowchallenge.core.entity.User
 import com.payment.paymentflowchallenge.core.usecase.user.FindUserUseCase
 import com.payment.paymentflowchallenge.core.usecase.user.UpdateUserBalanceUseCase
-import com.payment.paymentflowchallenge.dataprovider.client.bank.AuthServiceClient
+import com.payment.paymentflowchallenge.dataprovider.client.auth.AuthServiceClient
 import com.payment.paymentflowchallenge.dataprovider.database.postgres.repository.TransferRepository
 import com.payment.paymentflowchallenge.dataprovider.queue.kafka.KafkaQueueProducer
 import com.payment.paymentflowchallenge.dataprovider.queue.kafka.dto.NotificationDTO

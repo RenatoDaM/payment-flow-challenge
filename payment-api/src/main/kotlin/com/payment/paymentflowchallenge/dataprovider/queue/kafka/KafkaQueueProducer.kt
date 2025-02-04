@@ -22,18 +22,8 @@ class KafkaQueueProducer(
 ) {
     private final val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
-    suspend fun <K, V> KafkaProducer<K, V>.asyncSend(record: ProducerRecord<K, V>) =
-        suspendCoroutine<RecordMetadata> { continuation ->
-            send(record) { metadata, exception ->
-                exception?.let(continuation::resumeWithException)
-                    ?: continuation.resume(metadata)
-            }
-        }
-    
-    // todo need to assured that everything is async
     fun send(topicName: String, messageValue: Any) {
         val jsonMessage = messageValue.toJson()
-        // todo better treatment, cannot go null or something like that to kafka, like was happening
         producer.send(ProducerRecord(topicName, jsonMessage)) { metadata, exception ->
             if (exception != null) {
                 log.info("Error sending message: ${exception.message}")

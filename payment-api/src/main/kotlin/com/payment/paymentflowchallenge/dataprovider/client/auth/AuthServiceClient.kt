@@ -1,6 +1,6 @@
-package com.payment.paymentflowchallenge.dataprovider.client.bank
+package com.payment.paymentflowchallenge.dataprovider.client.auth
 
-import com.payment.paymentflowchallenge.dataprovider.client.bank.dto.AuthResponse
+import com.payment.paymentflowchallenge.dataprovider.client.auth.dto.AuthResponse
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
