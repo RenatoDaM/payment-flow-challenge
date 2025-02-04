@@ -48,7 +48,7 @@ class KafkaQueueConsumer(
                             log.info("Committing message with transferId: ${serializedMessage.transferId}")
                             kafkaConsumer.commitAsync()
                         } catch (e: Exception) {
-                            log.error("Error processing message. The message $message wasn't committed", e)
+                            log.error("Error processing message. The message with transactionId ${serializedMessage.transferId} wasn't committed, and will be reprocessed", e)
                         }
                     }
                 }
