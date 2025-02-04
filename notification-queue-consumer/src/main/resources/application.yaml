@@ -6,17 +6,18 @@ spring:
 notification:
   service:
     base-url: https://util.devi.tools/api/v1
-
+    queue-name: transfer-notification
 
 server:
   port: 8081
 
+# após 3 erros fica open por 10 segundos
 resilience4j:
   circuitbreaker:
     configs:
       default:
-        slidingWindowType: TIME_BASED
-        slidingWindowSize: 100
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 3
         permittedNumberOfCallsInHalfOpenState: 3
         slowCallDurationThreshold: 4s
         slowCallRateThreshold: 50

@@ -13,7 +13,7 @@ class NotificationServiceClient(
     @Qualifier("notificationService") private val authServiceClient: WebClient,
 ) {
 
-    @CircuitBreaker(name = "notification-service-A", fallbackMethod = "fallbackAfterr")
+    @CircuitBreaker(name = "notification-service-A")
     fun notify(notificationDTO: NotificationDTO): Mono<ResponseEntity<Void>> {
         return authServiceClient.post()
             .uri("/notif")
@@ -23,8 +23,8 @@ class NotificationServiceClient(
             .toBodilessEntity()
     }
 
-    fun fallbackAfterr(t: Throwable?): Mono<ResponseEntity<Void>> {
-        println("hahaha fallback!!!")
+    fun fallbackAfter(t: Throwable?): Mono<ResponseEntity<Void>> {
+        println("ainnnn Fallback method called due to exception: ${t?.message}")
         return Mono.empty()
     }
 }

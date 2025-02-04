@@ -9,6 +9,7 @@ import java.math.BigDecimal
 @AllArgsConstructor
 @Data
 data class NotificationDTO (
+    val transferId: Long,
     val email: String,
     val transferValue: BigDecimal,
     val payer: Long
