@@ -7,8 +7,11 @@ import com.payment.paymentflowchallenge.core.usecase.user.FindUserUseCase
 import com.payment.paymentflowchallenge.core.usecase.user.UpdateUserBalanceUseCase
 import com.payment.paymentflowchallenge.dataprovider.client.bank.AuthServiceClient
 import com.payment.paymentflowchallenge.dataprovider.database.postgres.repository.TransferRepository
+import com.payment.paymentflowchallenge.dataprovider.queue.kafka.KafkaQueueProducer
+import com.payment.paymentflowchallenge.dataprovider.queue.kafka.dto.NotificationDTO
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Mono
@@ -19,8 +22,11 @@ class TransferUseCase (
     private val transferRepository: TransferRepository,
     private val authServiceClient: AuthServiceClient,
     private val updateUserBalanceUseCase: UpdateUserBalanceUseCase,
-    private val findUserUseCase: FindUserUseCase
+    private val findUserUseCase: FindUserUseCase,
+    private val kafkaQueueProducer: KafkaQueueProducer
 ) {
+    @Value("\${kafka.topics[0].name}")
+    lateinit var topicName: String
 
     private final val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
@@ -33,14 +39,16 @@ class TransferUseCase (
             payee.zipWith(payer).flatMap { tuple ->
                 val payer = tuple.t1
                 val payee = tuple.t2
-
+                val payeeEmail = payee.email
                 validatePayerBalance(payer.balance, transfer.value)
                     .then(validatePayerRole(payer))
                     .then(executeTransfer(payer, transfer, payee))
+                    .doOnSuccess {
+                        log.info("transfer successful: from payer ${transfer.payer} to payee ${transfer.payee} with value ${transfer.value}")
+                        kafkaQueueProducer.send(topicName, NotificationDTO(transferId = it.id!!, email = payeeEmail, transferValue = transfer.value, payer = transfer.payee))
+                    }
             }
-        ).doOnSuccess {
-            log.info("transfer successful: from payer ${transfer.payer} to payee ${transfer.payee}")
-        }
+        )
     }
 
     private fun validatePayerBalance(payerBalance: BigDecimal, transferValue: BigDecimal): Mono<Void> {

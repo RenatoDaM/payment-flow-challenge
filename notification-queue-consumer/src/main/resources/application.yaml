@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: notification-queue-consumer
+
+
+notification:
+  service:
+    base-url: https://util.devi.tools/api/v1
+    queue-name: transfer-notification
+
+server:
+  port: 8081
+
+# após 3 erros fica open por 10 segundos
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 3
+        permittedNumberOfCallsInHalfOpenState: 3
+        slowCallDurationThreshold: 4s
+        slowCallRateThreshold: 50
+        failureRateThreshold: 3
+        waitDurationInOpenState: 10s
+        minimumNumberOfCalls: 3
+    instances:
+      notification-service-A:
+        baseConfig: default
+
+  retry:
+    instances:
+      notification-service-A:
+        maxAttempts: 3
+        waitDuration: 10s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.io.IOException
+        ##ignoreExceptions:
+        ##  - java.io.NotActiveException //just an example
