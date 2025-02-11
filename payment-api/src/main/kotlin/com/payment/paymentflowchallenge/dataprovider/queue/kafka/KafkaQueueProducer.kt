@@ -5,11 +5,15 @@ import org.apache.kafka.clients.admin.Admin
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.errors.TopicExistsException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.concurrent.ExecutionException
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 @Service
 class KafkaQueueProducer(
@@ -17,6 +21,14 @@ class KafkaQueueProducer(
     private val adminClient: Admin
 ) {
     private final val log: Logger = LoggerFactory.getLogger(this.javaClass)
+
+    suspend fun <K, V> KafkaProducer<K, V>.asyncSend(record: ProducerRecord<K, V>) =
+        suspendCoroutine<RecordMetadata> { continuation ->
+            send(record) { metadata, exception ->
+                exception?.let(continuation::resumeWithException)
+                    ?: continuation.resume(metadata)
+            }
+        }
 
     fun send(topicName: String, messageValue: Any) {
         val jsonMessage = messageValue.toJson()

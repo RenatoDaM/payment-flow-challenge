@@ -26,7 +26,7 @@ class TransferUseCase (
     private val kafkaQueueProducer: KafkaQueueProducer
 ) {
     @Value("\${kafka.topics[0].name}")
-    lateinit var topicName: String
+    private var topicName: String = "transfer-notification"
 
     private final val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
