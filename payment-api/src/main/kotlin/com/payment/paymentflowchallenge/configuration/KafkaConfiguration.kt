@@ -1,54 +1,44 @@
 package com.payment.paymentflowchallenge.configuration
 
-import org.apache.kafka.clients.admin.Admin
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.springframework.boot.context.properties.ConfigurationProperties
+import org.apache.kafka.clients.admin.NewTopic
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.io.IOException
-import java.io.InputStream
-import java.util.*
+import org.springframework.kafka.core.DefaultKafkaProducerFactory
+import org.springframework.kafka.core.KafkaAdmin
+import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.kafka.core.ProducerFactory
 
 @Configuration
 class KafkaConfiguration {
 
     @Bean
-    fun kafkaProducer(): KafkaProducer<String, String> {
-        val kafkaProps = loadProperties()
-        return KafkaProducer(kafkaProps)
+    fun producerFactory(): ProducerFactory<String, String> {
+        return DefaultKafkaProducerFactory(kafkaProperties())
     }
 
     @Bean
-    fun adminClient(): Admin {
-        val kafkaProps = loadProperties()
-        return Admin.create(kafkaProps)
+    fun kafkaTemplate(): KafkaTemplate<String, String> {
+        return KafkaTemplate(producerFactory())
     }
 
-    private fun loadProperties(): Properties {
-        return try {
-            val props = Properties()
-            val inputStream: InputStream = this::class.java.classLoader.getResourceAsStream("producer.properties")
-                ?: throw RuntimeException("producer.properties file not found in classpath")
+    @Bean
+    fun kafkaAdmin(): KafkaAdmin {
+        return KafkaAdmin(kafkaProperties())
+    }
 
-            inputStream.use { reader ->
-                props.load(reader)
-            }
+    @Bean
+    fun transferNotificationTopic(): NewTopic {
+        return NewTopic("transfer-notification", 1, 1.toShort())
+    }
 
-            return props
-        } catch (e: IOException) {
-            e.printStackTrace()
-            throw RuntimeException("Failed to load Kafka properties or create producer", e)
-        }
+    private fun kafkaProperties(): Map<String, Any> {
+        return mapOf(
+            "bootstrap.servers" to "PLAINTEXT://localhost:9092",
+            "key.serializer" to "org.apache.kafka.common.serialization.StringSerializer",
+            "value.serializer" to "org.apache.kafka.common.serialization.StringSerializer",
+            "security.protocol" to "PLAINTEXT",
+            "connections.max.idle.ms" to 180000,
+            "enable.auto.commit" to false
+        )
     }
 }
-
-@ConfigurationProperties(prefix = "kafka")
-data class TopicInitializerProperties(
-    val topics: List<TopicSpecification>
-)
-
-data class TopicSpecification(
-    val name: String,
-    val partitions: Int,
-    val replicationFactor: Short = 1
-)
