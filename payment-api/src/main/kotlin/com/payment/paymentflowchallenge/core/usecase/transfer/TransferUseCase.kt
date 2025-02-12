@@ -5,7 +5,7 @@ import com.payment.paymentflowchallenge.core.entity.Transfer
 import com.payment.paymentflowchallenge.core.entity.User
 import com.payment.paymentflowchallenge.core.usecase.user.FindUserUseCase
 import com.payment.paymentflowchallenge.core.usecase.user.UpdateUserBalanceUseCase
-import com.payment.paymentflowchallenge.dataprovider.client.bank.AuthServiceClient
+import com.payment.paymentflowchallenge.dataprovider.client.auth.AuthServiceClient
 import com.payment.paymentflowchallenge.dataprovider.database.postgres.repository.TransferRepository
 import com.payment.paymentflowchallenge.dataprovider.queue.kafka.KafkaQueueProducer
 import com.payment.paymentflowchallenge.dataprovider.queue.kafka.dto.NotificationDTO
@@ -25,39 +25,38 @@ class TransferUseCase (
     private val findUserUseCase: FindUserUseCase,
     private val kafkaQueueProducer: KafkaQueueProducer
 ) {
+
     @Value("\${kafka.topics[0].name}")
-    lateinit var topicName: String
+    private var topicName: String = "transfer-notification"
 
     private final val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
     @Transactional
     fun transfer(transfer: Transfer): Mono<Transfer> {
-        val payer = findUserUseCase.findUserById(transfer.payee)
-        val payee = findUserUseCase.findUserById(transfer.payer)
+        val payerMono = findUserUseCase.findUserById(transfer.payer)
+        val payeeMono = findUserUseCase.findUserById(transfer.payee)
 
         return authServiceClient.authenticate().then(
-            payee.zipWith(payer).flatMap { tuple ->
+            payerMono.zipWith(payeeMono).flatMap { tuple ->
+
                 val payer = tuple.t1
                 val payee = tuple.t2
-                val payeeEmail = payee.email
+
                 validatePayerBalance(payer.balance, transfer.value)
                     .then(validatePayerRole(payer))
                     .then(executeTransfer(payer, transfer, payee))
                     .doOnSuccess {
-                        log.info("transfer successful: from payer ${transfer.payer} to payee ${transfer.payee} with value ${transfer.value}")
-                        kafkaQueueProducer.send(topicName, NotificationDTO(transferId = it.id!!, email = payeeEmail, transferValue = transfer.value, payer = transfer.payee))
+                        log.info("Transfer successful: from payer ${transfer.payer} to payee ${transfer.payee} with value ${transfer.value}")
+                        kafkaQueueProducer.send(topicName, NotificationDTO(transferId = it.id!!, email = payee.email, transferValue = transfer.value, payer = transfer.payee))
                     }
             }
         )
     }
 
-    private fun validatePayerBalance(payerBalance: BigDecimal, transferValue: BigDecimal): Mono<Void> {
-        return if (payerBalance > transferValue) {
-            Mono.empty()
-        } else {
-            Mono.error(IllegalArgumentException("Payer doesn't have enough money"))
-        }
-    }
+
+    private fun validatePayerBalance(payerBalance: BigDecimal, transferValue: BigDecimal): Mono<Void> =
+        if (payerBalance > transferValue) Mono.empty()
+        else Mono.error(IllegalArgumentException("Payer doesn't have enough money"))
 
     private fun validatePayerRole(payer: User): Mono<Void> {
         return if (payer.role == UserRoleEnum.MERCHANT) {

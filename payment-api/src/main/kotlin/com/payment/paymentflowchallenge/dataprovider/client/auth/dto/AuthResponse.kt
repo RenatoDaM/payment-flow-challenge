@@ -1,4 +1,4 @@
-package com.payment.paymentflowchallenge.dataprovider.client.bank.dto
+package com.payment.paymentflowchallenge.dataprovider.client.auth.dto
 
 data class AuthResponse(
     val status: String,
