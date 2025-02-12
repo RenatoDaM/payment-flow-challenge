@@ -25,6 +25,7 @@ class TransferUseCase (
     private val findUserUseCase: FindUserUseCase,
     private val kafkaQueueProducer: KafkaQueueProducer
 ) {
+
     @Value("\${kafka.topics[0].name}")
     private var topicName: String = "transfer-notification"
 
@@ -32,13 +33,13 @@ class TransferUseCase (
 
     @Transactional
     fun transfer(transfer: Transfer): Mono<Transfer> {
-        val payer = findUserUseCase.findUserById(transfer.payer)
-        val payee = findUserUseCase.findUserById(transfer.payee)
+        val payer = findUserUseCase.findUserById(transfer.payee)
+        val payee = findUserUseCase.findUserById(transfer.payer)
 
         return authServiceClient.authenticate().then(
             payee.zipWith(payer).flatMap { tuple ->
-                val payee = tuple.t1
-                val payer = tuple.t2
+                val payer = tuple.t1
+                val payee = tuple.t2
                 val payeeEmail = payee.email
                 validatePayerBalance(payer.balance, transfer.value)
                     .then(validatePayerRole(payer))
