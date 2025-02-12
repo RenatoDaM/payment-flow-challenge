@@ -51,11 +51,9 @@ class TransferUseCase (
         )
     }
 
-    private fun validatePayerBalance(payerBalance: BigDecimal, transferValue: BigDecimal): Mono<Void> {
-        val payerCanAffordTransfer = payerBalance > transferValue
-        if (payerCanAffordTransfer) return Mono.empty()
-        return Mono.error(IllegalArgumentException("Payer doesn't have enough money"))
-    }
+    private fun validatePayerBalance(payerBalance: BigDecimal, transferValue: BigDecimal): Mono<Void> =
+        if (payerBalance > transferValue) Mono.empty()
+        else Mono.error(IllegalArgumentException("Payer doesn't have enough money"))
 
     private fun validatePayerRole(payer: User): Mono<Void> {
         return if (payer.role == UserRoleEnum.MERCHANT) {
