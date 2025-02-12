@@ -33,24 +33,26 @@ class TransferUseCase (
 
     @Transactional
     fun transfer(transfer: Transfer): Mono<Transfer> {
-        val payer = findUserUseCase.findUserById(transfer.payee)
-        val payee = findUserUseCase.findUserById(transfer.payer)
+        val payerMono = findUserUseCase.findUserById(transfer.payer)
+        val payeeMono = findUserUseCase.findUserById(transfer.payee)
 
         return authServiceClient.authenticate().then(
-            payee.zipWith(payer).flatMap { tuple ->
+            payerMono.zipWith(payeeMono).flatMap { tuple ->
+
                 val payer = tuple.t1
                 val payee = tuple.t2
-                val payeeEmail = payee.email
+
                 validatePayerBalance(payer.balance, transfer.value)
                     .then(validatePayerRole(payer))
                     .then(executeTransfer(payer, transfer, payee))
                     .doOnSuccess {
-                        log.info("transfer successful: from payer ${transfer.payer} to payee ${transfer.payee} with value ${transfer.value}")
-                        kafkaQueueProducer.send(topicName, NotificationDTO(transferId = it.id!!, email = payeeEmail, transferValue = transfer.value, payer = transfer.payee))
+                        log.info("Transfer successful: from payer ${transfer.payer} to payee ${transfer.payee} with value ${transfer.value}")
+                        kafkaQueueProducer.send(topicName, NotificationDTO(transferId = it.id!!, email = payee.email, transferValue = transfer.value, payer = transfer.payee))
                     }
             }
         )
     }
+
 
     private fun validatePayerBalance(payerBalance: BigDecimal, transferValue: BigDecimal): Mono<Void> =
         if (payerBalance > transferValue) Mono.empty()
