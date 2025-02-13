@@ -10,24 +10,23 @@ import java.util.concurrent.CompletableFuture
 
 @Service
 class KafkaQueueProducer(
-    private val kafkaTemplate: KafkaTemplate<String, String>
+    private val kafkaTemplate: KafkaTemplate<String, Any>
 ) {
     private final val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
-    fun send(topicName: String, messageValue: Any) {
-        val jsonMessage = messageValue.toJson()
+    fun <T : Any> send(topicName: String, messageValue: T) {
 
-        val future: CompletableFuture<SendResult<String, String>> =
-            kafkaTemplate.send(topicName, jsonMessage)
+        val future: CompletableFuture<SendResult<String, Any>> =
+            kafkaTemplate.send(topicName, messageValue)
 
         future.whenComplete { result, exception ->
             if (exception != null) {
-                log.error("Error sending message: $jsonMessage", exception)
+                log.error("Error sending message: ${messageValue.toJson()}", exception)
             } else {
                 log.info(
                     "Message sent successfully to topic ${result.recordMetadata.topic()} " +
-                        "on partition ${result.recordMetadata.partition()} " +
-                        "with offset ${result.recordMetadata.offset()}"
+                            "on partition ${result.recordMetadata.partition()} " +
+                            "with offset ${result.recordMetadata.offset()}"
                 )
             }
         }

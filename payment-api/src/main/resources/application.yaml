@@ -35,3 +35,7 @@ logging:
 auth:
   service:
     base-url: https://util.devi.tools/api/v1
+
+kafka:
+  topics:
+    transfer-notification: transfer-notification

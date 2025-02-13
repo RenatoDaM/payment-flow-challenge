@@ -2,7 +2,6 @@ spring:
   application:
     name: notification-queue-consumer
 
-
 notification:
   service:
     base-url: https://util.devi.tools/api/v1
