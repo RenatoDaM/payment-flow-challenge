@@ -25,6 +25,10 @@ class KafkaQueueConsumer(
     fun listenTransferNotification(notificationDTO: NotificationDTO, @Header(KafkaHeaders.RECEIVED_TOPIC) topic: String) {
         log.info("Received message from topic [transfer-notification]: ${notificationDTO.toJson()}")
         sendNotificationUseCase.sendNotification(notificationDTO)
+            .doOnError { error ->
+                log.error("Error processing message with transactionId ${notificationDTO.transferId}. " +
+                        "Retrying or sending to dead letter queue", error)
+            }
     }
 
     @DltHandler
