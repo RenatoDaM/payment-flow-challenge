@@ -8,7 +8,6 @@ import org.springframework.kafka.support.SendResult
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
-
 @Service
 class KafkaQueueProducer(
     private val kafkaTemplate: KafkaTemplate<String, String>

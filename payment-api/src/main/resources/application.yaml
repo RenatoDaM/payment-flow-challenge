@@ -1,6 +1,9 @@
 spring:
   application:
     name: "payment-flow-challenge"
+  kafka:
+    bootstrap-servers:
+      "PLAINTEXT://localhost:9092"
   r2dbc:
     password: root
     name: payment_flow
@@ -28,12 +31,6 @@ logging:
     org:
       springframework:
         r2dbc: DEBUG
-
-kafka:
-  topics:
-    - name: "transfer-notification"
-      partitions: 1
-      replicationFactor: 1
 
 auth:
   service:

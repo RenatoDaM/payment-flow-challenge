@@ -11,7 +11,6 @@ notification:
 server:
   port: 8081
 
-# após 3 erros fica open por 10 segundos
 resilience4j:
   circuitbreaker:
     configs:
