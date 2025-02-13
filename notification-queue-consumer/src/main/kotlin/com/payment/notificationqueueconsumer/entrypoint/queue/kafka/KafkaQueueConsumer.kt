@@ -21,8 +21,7 @@ import reactor.core.publisher.Mono
 
 @Component
 class KafkaQueueConsumer(
-    private val sendNotificationUseCase: SendNotificationUseCase,
-    private val circuitBreakerRegistry: CircuitBreakerRegistry
+    private val sendNotificationUseCase: SendNotificationUseCase
 ) {
 
     private val log: Logger = LoggerFactory.getLogger(this.javaClass)
@@ -35,7 +34,7 @@ class KafkaQueueConsumer(
         backoff = Backoff(10000L)
     )
     @KafkaListener(topics = ["transfer-notification"], groupId = "payment")
-    suspend fun listenTransferNotification(notificationDTO: NotificationDTO, @Header(KafkaHeaders.RECEIVED_TOPIC) topic: String): Mono<ResponseEntity<Void>> {
+    fun listenTransferNotification(notificationDTO: NotificationDTO, @Header(KafkaHeaders.RECEIVED_TOPIC) topic: String): Mono<ResponseEntity<Void>> {
         val transferId = notificationDTO.transferId
         log.info("Received message from topic $topic: ${notificationDTO.toJson()}")
 
@@ -50,25 +49,18 @@ class KafkaQueueConsumer(
     }
 
     @DltHandler
-    suspend fun handleDltTransferNotification(
+    fun handleDltTransferNotification(
         notificationDTO: NotificationDTO, @Header(KafkaHeaders.RECEIVED_TOPIC) topic: String
     ): Mono<ResponseEntity<Void>> {
         val transferId = notificationDTO.transferId
-        val circuitBreaker = circuitBreakerRegistry.circuitBreaker("notification-service-A")
-
         log.info("Event on dlt topic={}, payload={}", topic, notificationDTO.toJson())
 
-        if (circuitBreaker.state == CircuitBreaker.State.OPEN) {
-            log.warn("CircuitBreaker is OPEN. Skipping processing for transferId=$transferId")
-            return Mono.empty()
-        } else {
-            return sendNotificationUseCase.sendNotification(notificationDTO)
-                .doOnError { error ->
-                    log.error("Error processing message at dead letter queue with transferId $transferId", error)
-                }
-                .doOnSuccess {
-                    log.info("Message with transferId $transferId from topic $topic successfully processed")
-                }
-        }
+        return sendNotificationUseCase.sendNotification(notificationDTO)
+            .doOnError { error ->
+                log.error("Error processing message at dead letter queue with transferId $transferId", error)
+            }
+            .doOnSuccess {
+                log.info("Message with transferId $transferId from topic $topic successfully processed")
+            }
     }
 }

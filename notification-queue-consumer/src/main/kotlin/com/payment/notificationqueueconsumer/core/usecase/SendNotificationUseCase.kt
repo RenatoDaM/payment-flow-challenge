@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono
 class SendNotificationUseCase (
     private val notificationServiceClient: NotificationServiceClient
 ) {
-    suspend fun sendNotification(notificationDTO: NotificationDTO): Mono<ResponseEntity<Void>> {
+    fun sendNotification(notificationDTO: NotificationDTO): Mono<ResponseEntity<Void>> {
         return notificationServiceClient.notify(notificationDTO)
     }
 }

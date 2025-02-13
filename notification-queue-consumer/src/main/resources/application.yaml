@@ -18,11 +18,12 @@ resilience4j:
     configs:
       default:
         slidingWindowType: COUNT_BASED
-        slidingWindowSize: 3
+        slidingWindowSize: 10
+        automatic-transition-from-open-to-half-open-enabled: true
         permittedNumberOfCallsInHalfOpenState: 3
         slowCallDurationThreshold: 4s
         slowCallRateThreshold: 50
-        failureRateThreshold: 3
+        failureRateThreshold: 50
         waitDurationInOpenState: 10s
         minimumNumberOfCalls: 3
     instances:

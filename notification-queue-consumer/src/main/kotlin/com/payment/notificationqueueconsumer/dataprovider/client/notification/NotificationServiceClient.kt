@@ -14,7 +14,7 @@ class NotificationServiceClient(
 ) {
 
     @CircuitBreaker(name = "notification-service-A")
-    suspend fun notify(notificationDTO: NotificationDTO): Mono<ResponseEntity<Void>> {
+    fun notify(notificationDTO: NotificationDTO): Mono<ResponseEntity<Void>> {
         return authServiceClient.post()
             .uri("/notif")
             .bodyValue(notificationDTO)
