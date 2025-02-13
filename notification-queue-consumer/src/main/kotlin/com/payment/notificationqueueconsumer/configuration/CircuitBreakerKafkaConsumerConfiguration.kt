@@ -25,14 +25,14 @@ class CircuitBreakerKafkaConsumerConfiguration (
                     StateTransition.CLOSED_TO_OPEN,
                     StateTransition.CLOSED_TO_FORCED_OPEN,
                     StateTransition.HALF_OPEN_TO_OPEN -> {
-                        log.warn("Circuit breaker open. Stopping Kafka consumer")
+                        log.warn("Circuit Breaker state changed to OPEN. Stopping Kafka consumer")
                         kafkaManager.pause()
                     }
                     StateTransition.OPEN_TO_HALF_OPEN,
                     StateTransition.HALF_OPEN_TO_CLOSED,
                     StateTransition.FORCED_OPEN_TO_CLOSED,
                     StateTransition.FORCED_OPEN_TO_HALF_OPEN ->  {
-                        log.info("Circuit breaker half-open. Re-starting Kafka consumer")
+                        log.info("Circuit Breaker state changed to HALF_OPEN. Re-starting Kafka consumer")
                         kafkaManager.resume()
                     }
                     else -> throw IllegalStateException("Unknown transition state: " + event.stateTransition)
