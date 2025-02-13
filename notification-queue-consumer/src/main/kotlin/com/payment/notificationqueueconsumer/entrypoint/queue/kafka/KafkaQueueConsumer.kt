@@ -3,6 +3,8 @@ package com.payment.notificationqueueconsumer.entrypoint.queue.kafka
 import com.payment.notificationqueueconsumer.core.common.toJson
 import com.payment.notificationqueueconsumer.core.usecase.SendNotificationUseCase
 import com.payment.notificationqueueconsumer.dataprovider.client.notification.dto.NotificationDTO
+import io.github.resilience4j.circuitbreaker.CircuitBreaker
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
@@ -12,19 +14,26 @@ import org.springframework.kafka.annotation.RetryableTopic
 import org.springframework.kafka.retrytopic.DltStrategy
 import org.springframework.kafka.support.KafkaHeaders
 import org.springframework.messaging.handler.annotation.Header
+import org.springframework.retry.annotation.Backoff
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
 
 @Component
 class KafkaQueueConsumer(
-    private val sendNotificationUseCase: SendNotificationUseCase
+    private val sendNotificationUseCase: SendNotificationUseCase,
+    private val circuitBreakerRegistry: CircuitBreakerRegistry
 ) {
 
     private val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
     //Using the FAIL_ON_ERROR strategy we can configure the DLT consumer to end the execution without retrying if the DLT processing fails
-    @RetryableTopic(attempts = "1", kafkaTemplate = "kafkaTemplate", dltStrategy = DltStrategy.ALWAYS_RETRY_ON_ERROR)
+    @RetryableTopic(
+        attempts = "1",
+        kafkaTemplate = "kafkaTemplate",
+        dltStrategy = DltStrategy.ALWAYS_RETRY_ON_ERROR,
+        backoff = Backoff(10000L)
+    )
     @KafkaListener(topics = ["transfer-notification"], groupId = "payment")
     suspend fun listenTransferNotification(notificationDTO: NotificationDTO, @Header(KafkaHeaders.RECEIVED_TOPIC) topic: String): Mono<ResponseEntity<Void>> {
         val transferId = notificationDTO.transferId
@@ -32,8 +41,8 @@ class KafkaQueueConsumer(
 
         return sendNotificationUseCase.sendNotification(notificationDTO)
             .doOnError { error ->
-                log.error("Error processing message with transactionId $transferId. " +
-                        "Retrying or sending to dead letter queue", error)
+                log.error("Error processing message with transferId $transferId. " +
+                        "Retrying...", error)
             }
             .doOnSuccess {
                 log.info("Message with transferId $transferId from topic $topic successfully processed.")
@@ -41,9 +50,25 @@ class KafkaQueueConsumer(
     }
 
     @DltHandler
-    fun handleDltTransferNotification(
-        transferNotification: NotificationDTO, @Header(KafkaHeaders.RECEIVED_TOPIC) topic: String
-    ) {
-        log.info("Event on dlt topic={}, payload={}", topic, transferNotification.toJson())
+    suspend fun handleDltTransferNotification(
+        notificationDTO: NotificationDTO, @Header(KafkaHeaders.RECEIVED_TOPIC) topic: String
+    ): Mono<ResponseEntity<Void>> {
+        val transferId = notificationDTO.transferId
+        val circuitBreaker = circuitBreakerRegistry.circuitBreaker("notification-service-A")
+
+        log.info("Event on dlt topic={}, payload={}", topic, notificationDTO.toJson())
+
+        if (circuitBreaker.state == CircuitBreaker.State.OPEN) {
+            log.warn("CircuitBreaker is OPEN. Skipping processing for transferId=$transferId")
+            return Mono.empty()
+        } else {
+            return sendNotificationUseCase.sendNotification(notificationDTO)
+                .doOnError { error ->
+                    log.error("Error processing message at dead letter queue with transferId $transferId", error)
+                }
+                .doOnSuccess {
+                    log.info("Message with transferId $transferId from topic $topic successfully processed")
+                }
+        }
     }
 }

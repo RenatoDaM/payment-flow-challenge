@@ -31,8 +31,8 @@ class KafkaConfiguration {
     }
 
     @Bean
-    fun consumerFactory(): ConsumerFactory<String, NotificationDTO> {
-        return DefaultKafkaConsumerFactory(kafkaProperties(), StringDeserializer(), JsonDeserializer(NotificationDTO::class.java))
+    fun consumerFactory(): ConsumerFactory<String, Any> {
+        return DefaultKafkaConsumerFactory(kafkaProperties(), StringDeserializer(), JsonDeserializer())
     }
 
     private fun kafkaProperties(): Map<String, Any> {
