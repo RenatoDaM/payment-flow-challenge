@@ -38,7 +38,7 @@ class KafkaConfiguration {
 
         return mapOf(
             ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapAddress,
-            ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
+            ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to String::class.java,
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
             ProducerConfig.SECURITY_PROVIDERS_CONFIG to "PLAINTEXT",
             ProducerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG to 180000,

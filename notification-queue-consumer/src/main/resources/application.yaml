@@ -1,6 +1,9 @@
 spring:
   application:
     name: notification-queue-consumer
+  kafka:
+    bootstrap-servers:
+      "PLAINTEXT://localhost:9092"
 
 notification:
   service:
@@ -38,3 +41,4 @@ resilience4j:
           - java.io.IOException
         ##ignoreExceptions:
         ##  - java.io.NotActiveException //just an example
+
