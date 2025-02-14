@@ -45,7 +45,12 @@ class TransferUseCase (
                     .then(executeTransfer(payer, transfer, payee))
                     .doOnSuccess {
                         log.info("Transfer successful: from payer ${transfer.payer} to payee ${transfer.payee} with value ${transfer.value}")
-                        kafkaQueueProducer.send(transferNotificationTopicName, NotificationDTO(transferId = it.id!!, email = payee.email, transferValue = transfer.value, payer = transfer.payee))
+                        kafkaQueueProducer.send(transferNotificationTopicName, NotificationDTO(
+                            transferId = it.id!!,
+                            email = payee.email,
+                            transferValue = transfer.value,
+                            payer = transfer.payee)
+                        )
                     }
             }
         )

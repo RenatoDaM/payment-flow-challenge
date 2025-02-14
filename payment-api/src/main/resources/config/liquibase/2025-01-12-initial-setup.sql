@@ -12,7 +12,8 @@ CREATE TABLE users (
     email VARCHAR (255) NOT NULL UNIQUE,
     password VARCHAR (255) NOT NULL,
     role VARCHAR(40) NOT NULL,
-    balance NUMERIC(10, 2) NOT NULL
+    balance NUMERIC(10, 2) NOT NULL,
+    version BIGINT NOT NULL
 );
 
 CREATE TABLE transfers (

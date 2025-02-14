@@ -2,6 +2,7 @@ package com.payment.paymentflowchallenge.core.entity
 
 import com.payment.paymentflowchallenge.core.common.enums.UserRoleEnum
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Version
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
 
@@ -13,5 +14,7 @@ data class User(
     val email: String,
     private val password: String,
     val role: UserRoleEnum,
-    var balance: BigDecimal
+    var balance: BigDecimal,
+    @Version
+    val version: Long
 )
