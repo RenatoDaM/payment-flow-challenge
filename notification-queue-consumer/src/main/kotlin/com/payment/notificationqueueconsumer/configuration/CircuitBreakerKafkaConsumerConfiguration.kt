@@ -29,7 +29,9 @@ class CircuitBreakerKafkaConsumerConfiguration (
                         kafkaManager.pause()
                     }
                     StateTransition.OPEN_TO_HALF_OPEN,
-                    StateTransition.HALF_OPEN_TO_CLOSED,
+                    StateTransition.HALF_OPEN_TO_CLOSED -> {
+                        log.info("Circuit Breaker service stabilized, state changed to CLOSED")
+                    }
                     StateTransition.FORCED_OPEN_TO_CLOSED,
                     StateTransition.FORCED_OPEN_TO_HALF_OPEN ->  {
                         log.info("Circuit Breaker state changed to HALF_OPEN. Re-starting Kafka consumer")

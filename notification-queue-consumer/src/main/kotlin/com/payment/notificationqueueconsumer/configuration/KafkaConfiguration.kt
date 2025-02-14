@@ -36,9 +36,8 @@ class KafkaConfiguration {
     }
 
     private fun kafkaProperties(): Map<String, Any> {
-        val notificationDTOClassName = NotificationDTO::class.java.name
-        val notificationDTOClassSimpleName = NotificationDTO::class.simpleName
-        val notificationTypeMapping = "$notificationDTOClassSimpleName:$notificationDTOClassName"
+        val notificationDTOTypeMapping = "${NotificationDTO::class.simpleName}:${NotificationDTO::class.java.name}"
+        val notificationDTOPackageName = NotificationDTO::class.java.`package`
 
         return mapOf(
             ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to "PLAINTEXT://localhost:9092",
@@ -52,8 +51,8 @@ class KafkaConfiguration {
             ProducerConfig.SECURITY_PROVIDERS_CONFIG to "PLAINTEXT",
             ProducerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG to 180000,
             ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG to false,
-            JsonDeserializer.TYPE_MAPPINGS to notificationTypeMapping,
-            JsonDeserializer.TRUSTED_PACKAGES to "com.payment.notificationqueueconsumer.dataprovider.client.notification.dto"
+            JsonDeserializer.TYPE_MAPPINGS to notificationDTOTypeMapping,
+            JsonDeserializer.TRUSTED_PACKAGES to notificationDTOPackageName
             )
     }
 

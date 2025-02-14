@@ -53,7 +53,6 @@ class TransferUseCase (
         )
     }
 
-
     private fun validatePayerBalance(payerBalance: BigDecimal, transferValue: BigDecimal): Mono<Void> =
         if (payerBalance > transferValue) Mono.empty()
         else Mono.error(IllegalArgumentException("Payer doesn't have enough money"))

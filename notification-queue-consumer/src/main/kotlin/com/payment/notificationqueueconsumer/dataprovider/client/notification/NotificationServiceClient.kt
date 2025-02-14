@@ -22,9 +22,4 @@ class NotificationServiceClient(
             .onStatus({ t -> t.isError }, { it.createException() })
             .toBodilessEntity()
     }
-
-    fun fallbackAfter(t: Throwable?): Mono<ResponseEntity<Void>> {
-        println("ainnnn Fallback method called due to exception: ${t?.message}")
-        return Mono.empty()
-    }
 }

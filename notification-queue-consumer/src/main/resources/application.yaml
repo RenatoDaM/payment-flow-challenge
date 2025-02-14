@@ -19,7 +19,7 @@ resilience4j:
       default:
         slidingWindowType: COUNT_BASED
         slidingWindowSize: 10
-        automatic-transition-from-open-to-half-open-enabled: true
+        automaticTransitionFromOpenToHalfOpenEnabled: true
         permittedNumberOfCallsInHalfOpenState: 3
         slowCallDurationThreshold: 4s
         slowCallRateThreshold: 50
@@ -29,17 +29,3 @@ resilience4j:
     instances:
       notification-service-A:
         baseConfig: default
-
-  retry:
-    instances:
-      notification-service-A:
-        maxAttempts: 3
-        waitDuration: 10s
-        enableExponentialBackoff: true
-        exponentialBackoffMultiplier: 2
-        retryExceptions:
-          - org.springframework.web.client.HttpServerErrorException
-          - java.io.IOException
-        ##ignoreExceptions:
-        ##  - java.io.NotActiveException //just an example
-
