@@ -34,7 +34,7 @@ class TransferUseCaseTest {
         updateUserBalanceUseCase = mock(UpdateUserBalanceUseCase::class.java)
         findUserUseCase = mock(FindUserUseCase::class.java)
         kafkaQueueProducer = mock(KafkaQueueProducer::class.java)
-        transferUseCase = TransferUseCase(transferRepository, authServiceClient, updateUserBalanceUseCase, findUserUseCase, kafkaQueueProducer)
+        transferUseCase = TransferUseCase(transferRepository, authServiceClient, updateUserBalanceUseCase, findUserUseCase, kafkaQueueProducer, "any-topic-name-for-unit-test")
     }
 
     @Test

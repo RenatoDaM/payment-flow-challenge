@@ -14,13 +14,13 @@ import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.serializer.JsonSerializer
 
 @Configuration
-class KafkaConfiguration {
-
+class KafkaConfiguration(
     @Value(value = "\${spring.kafka.bootstrap-servers}")
-    private lateinit var bootstrapAddress: String
+    private val bootstrapAddress: String,
 
     @Value(value = "\${kafka.topics.transfer-notification}")
-    private lateinit var transferNotificationTopicName: String
+    private val transferNotificationTopicName: String
+) {
 
     @Bean
     fun producerFactory(): ProducerFactory<String, Any> {

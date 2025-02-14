@@ -6,10 +6,10 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
-class WebClientConfiguration {
-
+class WebClientConfiguration(
     @Value("\${auth.service.base-url}")
-    private lateinit var authServiceBaseUrl: String
+    private val authServiceBaseUrl: String
+) {
 
     @Bean(name = ["authService"])
     fun authServiceClient(): WebClient {

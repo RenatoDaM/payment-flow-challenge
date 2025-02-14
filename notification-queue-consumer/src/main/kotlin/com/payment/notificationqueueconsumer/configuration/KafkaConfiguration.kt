@@ -15,10 +15,10 @@ import org.springframework.kafka.support.serializer.JsonDeserializer
 import org.springframework.kafka.support.serializer.JsonSerializer
 
 @Configuration
-class KafkaConfiguration {
-
+class KafkaConfiguration(
     @Value(value = "\${spring.kafka.bootstrap-servers}")
-    private lateinit var bootstrapAddress: String
+    private val bootstrapAddress: String
+) {
 
     @Bean
     fun producerFactory(): ProducerFactory<String, Any> {

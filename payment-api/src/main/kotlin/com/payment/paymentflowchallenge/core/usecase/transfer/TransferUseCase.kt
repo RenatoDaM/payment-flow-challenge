@@ -23,11 +23,9 @@ class TransferUseCase (
     private val authServiceClient: AuthServiceClient,
     private val updateUserBalanceUseCase: UpdateUserBalanceUseCase,
     private val findUserUseCase: FindUserUseCase,
-    private val kafkaQueueProducer: KafkaQueueProducer
+    private val kafkaQueueProducer: KafkaQueueProducer,
+    @Value("\${kafka.topics.transfer-notification}") private val transferNotificationTopicName: String
 ) {
-
-    @Value("\${kafka.topics.transfer-notification}")
-    private lateinit var transferNotificationTopicName: String
 
     private final val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
