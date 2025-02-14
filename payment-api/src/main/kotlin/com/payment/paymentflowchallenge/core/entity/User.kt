@@ -16,5 +16,5 @@ data class User(
     val role: UserRoleEnum,
     var balance: BigDecimal,
     @Version
-    val version: Long
+    val version: Long?
 )

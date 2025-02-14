@@ -31,7 +31,8 @@ data class CreateUserRequest (
             fullName = fullName,
             documentNumber = documentNumber,
             role = role,
-            balance = balance
+            balance = balance,
+            version = null
         )
     }
 }
