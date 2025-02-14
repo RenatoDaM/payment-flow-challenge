@@ -8,7 +8,6 @@ spring:
 notification:
   service:
     base-url: https://util.devi.tools/api/v1
-    queue-name: transfer-notification
 
 server:
   port: 8081

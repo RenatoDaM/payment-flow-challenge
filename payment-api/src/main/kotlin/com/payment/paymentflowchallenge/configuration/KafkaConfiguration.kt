@@ -13,13 +13,14 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 import org.springframework.kafka.support.serializer.JsonSerializer
 
-
-
 @Configuration
 class KafkaConfiguration {
 
     @Value(value = "\${spring.kafka.bootstrap-servers}")
     private lateinit var bootstrapAddress: String
+
+    @Value(value = "\${kafka.topics.transfer-notification}")
+    private lateinit var transferNotificationTopicName: String
 
     @Bean
     fun producerFactory(): ProducerFactory<String, Any> {
@@ -53,7 +54,7 @@ class KafkaConfiguration {
 
     @Bean
     fun transferNotificationTopic(): NewTopic {
-        return NewTopic("transfer-notification", 1, 1.toShort())
+        return NewTopic(transferNotificationTopicName, 1, 1.toShort())
     }
 
 

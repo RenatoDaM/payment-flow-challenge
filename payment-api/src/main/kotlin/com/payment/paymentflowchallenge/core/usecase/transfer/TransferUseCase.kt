@@ -27,7 +27,7 @@ class TransferUseCase (
 ) {
 
     @Value("\${kafka.topics.transfer-notification}")
-    private lateinit var topicName: String
+    private lateinit var transferNotificationTopicName: String
 
     private final val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
@@ -47,7 +47,7 @@ class TransferUseCase (
                     .then(executeTransfer(payer, transfer, payee))
                     .doOnSuccess {
                         log.info("Transfer successful: from payer ${transfer.payer} to payee ${transfer.payee} with value ${transfer.value}")
-                        kafkaQueueProducer.send(topicName, NotificationDTO(transferId = it.id!!, email = payee.email, transferValue = transfer.value, payer = transfer.payee))
+                        kafkaQueueProducer.send(transferNotificationTopicName, NotificationDTO(transferId = it.id!!, email = payee.email, transferValue = transfer.value, payer = transfer.payee))
                     }
             }
         )
