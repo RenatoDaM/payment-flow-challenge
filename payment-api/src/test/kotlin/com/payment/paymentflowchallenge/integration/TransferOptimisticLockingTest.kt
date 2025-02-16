@@ -37,43 +37,81 @@ class TransferOptimisticLockingTest (
     @MockitoBean
     private lateinit var kafkaQueueProducer: KafkaQueueProducer
 
-    @Test
-    fun `should throw OptimisticLockingFailureException when two transactions update the same entity concurrently`() {
-        val payer = userRepository.save(
-            User(null, "Payer Test", "12345678901", "payer@test.com", "password",
-                UserRoleEnum.COMMON, BigDecimal(1000), null)
+    private lateinit var payer: User
+    private lateinit var payee: User
+
+    @BeforeEach
+    fun setup() {
+        userRepository.deleteAll().block()
+
+        payer = userRepository.save(
+            User(
+                null,
+                "Payer Test",
+                "12345678901",
+                "payer@test.com",
+                "password",
+                UserRoleEnum.COMMON,
+                BigDecimal("1000.00"),
+                null
+            )
         ).block()!!
 
-        val payee = userRepository.save(
-            User(null, "Payee Test", "10987654321", "payee@test.com", "password",
-                UserRoleEnum.MERCHANT, BigDecimal(1000), null)
+        payee = userRepository.save(
+            User(
+                null,
+                "Payee Test",
+                "10987654321",
+                "payee@test.com",
+                "password",
+                UserRoleEnum.MERCHANT,
+                BigDecimal("1000.00"),
+                null
+            )
         ).block()!!
+    }
+
+    @Test
+    fun `should throw OptimisticLockingFailureException when two transactions update the same entity concurrently`() {
+        // TODO: search a better solution than using .setScale in all variables
+        val transaction1Value = BigDecimal(50.00).setScale(2)
+        val transaction2Value = BigDecimal(50.00).setScale(2)
+        val actualBalance = BigDecimal(1000.00).setScale(2)
+        // one transaction should fail due optimistic locking
+        val payerExpectedFinalBalance = actualBalance - transaction1Value
+        val payeeExpectedFinalBalance = actualBalance + transaction1Value
 
         whenever(authServiceClient.authenticate()).thenReturn(Mono.empty())
 
-        val transfer1 = Transfer(null, BigDecimal(50), payer.id!!, payee.id!!, LocalDateTime.now())
-        val transfer2 = Transfer(null, BigDecimal(50), payer.id!!, payee.id!!, LocalDateTime.now())
+        val transfer1 = Transfer(null, transaction1Value, payer.id!!, payee.id!!, LocalDateTime.now())
+        val transfer2 = Transfer(null, transaction2Value, payer.id!!, payee.id!!, LocalDateTime.now())
 
-        val concurrentTransfers = Mono.zip(
-            transferUseCase.transfer(transfer1),
-            transferUseCase.transfer(transfer2)
-        )
+        val transaction1 = transferUseCase.transfer(transfer1)
+        val transaction2 = transferUseCase.transfer(transfer2)
 
-        StepVerifier.create(concurrentTransfers.map { it.t1 })
-            .expectErrorMatches { it is OptimisticLockingFailureException }
+        val concurrentTransfers = Mono.zip(transaction1, transaction2)
+
+        StepVerifier.create(concurrentTransfers)
+            .expectError(OptimisticLockingFailureException::class.java)
             .verify()
 
-        StepVerifier.create(concurrentTransfers.map { it.t2 })
-            .expectErrorMatches { it is OptimisticLockingFailureException }
-            .verify()
-        val userrr = userRepository.findById(payer.id!!)
         StepVerifier.create(userRepository.findById(payer.id!!))
             .assertNext { updatedPayer ->
-                assert(updatedPayer.balance == BigDecimal(1000)) { "balance should not be updated" }
+                assert(updatedPayer.balance == payerExpectedFinalBalance) {
+                    "Payer balance mismatch: expected $payerExpectedFinalBalance but was ${updatedPayer.balance}"
+                }
             }
             .verifyComplete()
 
+        StepVerifier.create(userRepository.findById(payee.id!!))
+            .assertNext { updatedPayee ->
+                assert(updatedPayee.balance == payeeExpectedFinalBalance) {
+                    "Payee balance mismatch: expected $payeeExpectedFinalBalance but was ${updatedPayee.balance}"
+                }
+            }
+            .verifyComplete()
     }
+
 
     companion object {
         @Container
