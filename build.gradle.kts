@@ -52,6 +52,7 @@ subprojects {
         testImplementation("org.testcontainers:r2dbc:1.20.4")
         testImplementation("org.testcontainers:junit-jupiter:1.20.4")
         testImplementation("org.testcontainers:kafka:1.20.4")
+        testImplementation("org.springframework.kafka:spring-kafka-test:3.3.2")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     }
 }
