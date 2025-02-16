@@ -44,6 +44,8 @@ class TransferOptimisticLockingTest (
     fun setup() {
         userRepository.deleteAll().block()
 
+        val usersBalance = BigDecimal(1000.00)
+
         payer = userRepository.save(
             User(
                 null,
@@ -52,7 +54,7 @@ class TransferOptimisticLockingTest (
                 "payer@test.com",
                 "password",
                 UserRoleEnum.COMMON,
-                BigDecimal("1000.00"),
+                usersBalance,
                 null
             )
         ).block()!!
@@ -65,7 +67,7 @@ class TransferOptimisticLockingTest (
                 "payee@test.com",
                 "password",
                 UserRoleEnum.MERCHANT,
-                BigDecimal("1000.00"),
+                usersBalance,
                 null
             )
         ).block()!!
@@ -74,17 +76,15 @@ class TransferOptimisticLockingTest (
     @Test
     fun `should throw OptimisticLockingFailureException when two transactions update the same entity concurrently`() {
         // TODO: search a better solution than using .setScale in all variables
-        val transaction1Value = BigDecimal(50.00).setScale(2)
-        val transaction2Value = BigDecimal(50.00).setScale(2)
-        val actualBalance = BigDecimal(1000.00).setScale(2)
+        val transactionsValue = BigDecimal(50.00).setScale(2)
         // one transaction should fail due optimistic locking
-        val payerExpectedFinalBalance = actualBalance - transaction1Value
-        val payeeExpectedFinalBalance = actualBalance + transaction1Value
+        val payerExpectedFinalBalance = payer.balance - transactionsValue
+        val payeeExpectedFinalBalance = payee.balance + transactionsValue
 
         whenever(authServiceClient.authenticate()).thenReturn(Mono.empty())
 
-        val transfer1 = Transfer(null, transaction1Value, payer.id!!, payee.id!!, LocalDateTime.now())
-        val transfer2 = Transfer(null, transaction2Value, payer.id!!, payee.id!!, LocalDateTime.now())
+        val transfer1 = Transfer(null, transactionsValue, payer.id!!, payee.id!!, LocalDateTime.now())
+        val transfer2 = Transfer(null, transactionsValue, payer.id!!, payee.id!!, LocalDateTime.now())
 
         val transaction1 = transferUseCase.transfer(transfer1)
         val transaction2 = transferUseCase.transfer(transfer2)
