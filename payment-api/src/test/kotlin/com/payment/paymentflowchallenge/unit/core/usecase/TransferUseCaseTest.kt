@@ -24,17 +24,17 @@ import java.time.LocalDateTime
 class TransferUseCaseTest {
     private lateinit var transferUseCase: TransferUseCase
     private lateinit var transferRepository: TransferRepository
-    private lateinit var authServiceClient: AuthServiceClient
     private lateinit var updateUserBalanceUseCase: UpdateUserBalanceUseCase
     private lateinit var findUserUseCase: FindUserUseCase
+    private lateinit var authServiceClient: AuthServiceClient
     private lateinit var kafkaQueueProducer: KafkaQueueProducer
 
     @BeforeEach
     fun setup() {
         transferRepository = mock(TransferRepository::class.java)
-        authServiceClient = mock(AuthServiceClient::class.java)
         updateUserBalanceUseCase = mock(UpdateUserBalanceUseCase::class.java)
         findUserUseCase = mock(FindUserUseCase::class.java)
+        authServiceClient = mock(AuthServiceClient::class.java)
         kafkaQueueProducer = mock(KafkaQueueProducer::class.java)
         transferUseCase = TransferUseCase(transferRepository, authServiceClient, updateUserBalanceUseCase, findUserUseCase, kafkaQueueProducer, "any-topic-name-for-unit-test")
     }
