@@ -39,35 +39,40 @@ class TransferOptimisticLockingTest (
 
     @Test
     fun `should throw OptimisticLockingFailureException when two transactions update the same entity concurrently`() {
-        userRepository.save(
+        val payer = userRepository.save(
             User(null, "Payer Test", "12345678901", "payer@test.com", "password",
-                UserRoleEnum.COMMON, BigDecimal(500), null)
+                UserRoleEnum.COMMON, BigDecimal(1000), null)
         ).block()!!
 
-         userRepository.save(
+        val payee = userRepository.save(
             User(null, "Payee Test", "10987654321", "payee@test.com", "password",
-                UserRoleEnum.MERCHANT, BigDecimal(100), null)
+                UserRoleEnum.MERCHANT, BigDecimal(1000), null)
         ).block()!!
 
-        // this test should not be dependent on external API
-        whenever(authServiceClient.authenticate())
-            .thenReturn(Mono.empty())
+        whenever(authServiceClient.authenticate()).thenReturn(Mono.empty())
 
-        val transfer1 = Transfer(null, BigDecimal(200), 1, 2, LocalDateTime.now())
-        val transfer2 = Transfer(null, BigDecimal(300), 1, 2, LocalDateTime.now())
+        val transfer1 = Transfer(null, BigDecimal(50), payer.id!!, payee.id!!, LocalDateTime.now())
+        val transfer2 = Transfer(null, BigDecimal(50), payer.id!!, payee.id!!, LocalDateTime.now())
 
+        val concurrentTransfers = Mono.zip(
+            transferUseCase.transfer(transfer1),
+            transferUseCase.transfer(transfer2)
+        )
 
-
-        val transaction1 = transferUseCase.transfer(transfer1)
-        val transaction2 = transferUseCase.transfer(transfer2)
-
-        StepVerifier.create(transaction1)
+        StepVerifier.create(concurrentTransfers.map { it.t1 })
             .expectErrorMatches { it is OptimisticLockingFailureException }
             .verify()
 
-        StepVerifier.create(transaction2)
+        StepVerifier.create(concurrentTransfers.map { it.t2 })
             .expectErrorMatches { it is OptimisticLockingFailureException }
             .verify()
+        val userrr = userRepository.findById(payer.id!!)
+        StepVerifier.create(userRepository.findById(payer.id!!))
+            .assertNext { updatedPayer ->
+                assert(updatedPayer.balance == BigDecimal(1000)) { "balance should not be updated" }
+            }
+            .verifyComplete()
+
     }
 
     companion object {

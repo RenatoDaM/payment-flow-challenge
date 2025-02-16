@@ -1,5 +1,8 @@
 package com.payment.paymentflowchallenge.core.exception.handler
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -12,6 +15,7 @@ import org.springframework.web.reactive.result.method.annotation.ResponseEntityE
 
 @RestControllerAdvice
 class RestControllerAdvice: ResponseEntityExceptionHandler() {
+    private final val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     protected fun handleNotFound(ex: MethodArgumentNotValidException, request: WebRequest): ProblemDetail {
@@ -34,8 +38,11 @@ class RestControllerAdvice: ResponseEntityExceptionHandler() {
 
     @ExceptionHandler(WebClientResponseException::class)
     fun handleWebClientResponseException(ex: WebClientResponseException): ProblemDetail {
+        val errorDetail = "Error from external service: " + ex.message
+        log.error(errorDetail, ex)
+
         val problemDetail = ProblemDetail.forStatusAndDetail(ex.statusCode, "Error from external service")
-        problemDetail.detail = "Error from external service: " + ex.message
+        problemDetail.detail = errorDetail
         problemDetail.title = "External Service Error"
         return problemDetail
     }
@@ -45,6 +52,22 @@ class RestControllerAdvice: ResponseEntityExceptionHandler() {
         val problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid input or argument.")
         problemDetail.detail = "Invalid input provided: ${ex.message}"
         problemDetail.title = "Bad Request Error"
+        return problemDetail
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException::class)
+    fun handleOptimisticLockingFailureException(ex: OptimisticLockingFailureException): ProblemDetail {
+        log.error("Optimistic Locking error", ex)
+
+        val problemDetail = ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT,
+            "The requested operation could not be completed because the resource was modified by another process."
+        )
+        problemDetail.title = "Optimistic Locking Conflict"
+        problemDetail.detail = """
+        Another transaction updated this resource before your request was processed. 
+        Please refresh the data and try again.
+    """.trimIndent()
         return problemDetail
     }
 }
