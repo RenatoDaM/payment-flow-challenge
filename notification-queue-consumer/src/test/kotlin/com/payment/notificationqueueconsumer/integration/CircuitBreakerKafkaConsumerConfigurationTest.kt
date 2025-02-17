@@ -95,9 +95,7 @@ class CircuitBreakerKafkaConsumerConfigurationTest {
         @JvmStatic
         @BeforeAll
         fun beforeAll() {
-
             kafka.start()
-            println("Kafka iniciado em: ${kafka.bootstrapServers}") // <-- Adiciona um log para verificar o Bootstrap Server
         }
 
         @JvmStatic
