@@ -53,6 +53,7 @@ subprojects {
         testImplementation("org.testcontainers:junit-jupiter:1.20.4")
         testImplementation("org.testcontainers:kafka:1.20.4")
         testImplementation("org.springframework.kafka:spring-kafka-test:3.3.2")
+        implementation("com.maciejwalkowiak.spring:wiremock-spring-boot:2.1.3")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     }
 }

@@ -39,13 +39,3 @@ auth:
 kafka:
   topics:
     transfer-notification: transfer-notification
-
-
----
-spring:
-  config:
-    activate:
-      on-profile: test
-  r2dbc:
-    url: r2dbc:tc:postgresql:///testdb?TC_IMAGE_TAG=16.3
----
