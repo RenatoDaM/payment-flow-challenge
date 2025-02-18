@@ -1,0 +1,37 @@
+spring:
+  kafka:
+    properties:
+      auto.create.topics.enable: true
+    consumer:
+      auto-offset-reset: earliest
+      group-id: test
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
+
+# pointing at wiremock
+notification:
+  service:
+    base-url: http://localhost:9090
+
+server:
+  port: 8081
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        permittedNumberOfCallsInHalfOpenState: 3
+        slowCallDurationThreshold: 4s
+        slowCallRateThreshold: 50
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        minimumNumberOfCalls: 3
+    instances:
+      notification-service-A:
+        baseConfig: default

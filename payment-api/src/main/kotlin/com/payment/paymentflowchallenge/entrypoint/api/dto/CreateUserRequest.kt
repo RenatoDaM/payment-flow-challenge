@@ -4,6 +4,7 @@ import com.payment.paymentflowchallenge.core.common.enums.UserRoleEnum
 import com.payment.paymentflowchallenge.core.entity.User
 import jakarta.validation.constraints.DecimalMin
 import jakarta.validation.constraints.Digits
+import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import java.math.BigDecimal
@@ -14,6 +15,7 @@ data class CreateUserRequest (
     @field:NotBlank
     private val documentNumber: String,
     @field:NotBlank
+    @field:Email
     private val email: String,
     @field:NotBlank
     private val password: String,
@@ -31,7 +33,8 @@ data class CreateUserRequest (
             fullName = fullName,
             documentNumber = documentNumber,
             role = role,
-            balance = balance
+            balance = balance,
+            version = null
         )
     }
 }

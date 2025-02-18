@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  application:
+    name: notification-queue-consumer
+  kafka:
+    bootstrap-servers:
+      "PLAINTEXT://localhost:9092"
+  liquibase:
+    enabled: true
+    change-log: classpath:/config/liquibase/changelog.xml
+    url: jdbc:postgresql://localhost:5432/payment_flow
+    password: root
+    user: root
+  webflux:
+    problemdetails:
+      enabled: true
+kafka:
+  topics:
+    transfer-notification: transfer-notification
+
+auth:
+  service:
+    base-url: https://util.devi.tools/api/v1
+

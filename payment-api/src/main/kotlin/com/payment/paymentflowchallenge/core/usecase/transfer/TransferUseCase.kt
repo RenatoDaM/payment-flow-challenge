@@ -23,11 +23,9 @@ class TransferUseCase (
     private val authServiceClient: AuthServiceClient,
     private val updateUserBalanceUseCase: UpdateUserBalanceUseCase,
     private val findUserUseCase: FindUserUseCase,
-    private val kafkaQueueProducer: KafkaQueueProducer
+    private val kafkaQueueProducer: KafkaQueueProducer,
+    @Value("\${kafka.topics.transfer-notification}") private val transferNotificationTopicName: String
 ) {
-
-    @Value("\${kafka.topics[0].name}")
-    private var topicName: String = "transfer-notification"
 
     private final val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
@@ -47,32 +45,29 @@ class TransferUseCase (
                     .then(executeTransfer(payer, transfer, payee))
                     .doOnSuccess {
                         log.info("Transfer successful: from payer ${transfer.payer} to payee ${transfer.payee} with value ${transfer.value}")
-                        kafkaQueueProducer.send(topicName, NotificationDTO(transferId = it.id!!, email = payee.email, transferValue = transfer.value, payer = transfer.payee))
+                        kafkaQueueProducer.send(transferNotificationTopicName, NotificationDTO(
+                            transferId = it.id!!,
+                            email = payee.email,
+                            transferValue = transfer.value,
+                            payer = transfer.payee)
+                        )
                     }
             }
         )
     }
 
-
     private fun validatePayerBalance(payerBalance: BigDecimal, transferValue: BigDecimal): Mono<Void> =
         if (payerBalance > transferValue) Mono.empty()
         else Mono.error(IllegalArgumentException("Payer doesn't have enough money"))
 
-    private fun validatePayerRole(payer: User): Mono<Void> {
-        return if (payer.role == UserRoleEnum.MERCHANT) {
-            Mono.error(IllegalArgumentException("Merchants cannot do transfers"))
-        } else {
-            Mono.empty()
-        }
-    }
+    private fun validatePayerRole(payer: User): Mono<Void> =
+        if (payer.role == UserRoleEnum.MERCHANT) Mono.error(IllegalArgumentException("Merchants cannot do transfers"))
+        else Mono.empty()
 
     private fun executeTransfer(payer: User, transfer: Transfer, payee: User): Mono<Transfer> {
-        val payerFinalBalance = payer.balance - transfer.value
-        val payeeFinalBalance = payee.balance + transfer.value
-
         return Mono.zip(
-            updateUserBalanceUseCase.updateUserBalanceById(payer.id!!, payerFinalBalance),
-            updateUserBalanceUseCase.updateUserBalanceById(payee.id!!, payeeFinalBalance)
+            updateUserBalanceUseCase.updateUserBalance(payer, payer.balance - transfer.value),
+            updateUserBalanceUseCase.updateUserBalance(payee, payee.balance + transfer.value)
         ).then(transferRepository.save(transfer))
     }
 }

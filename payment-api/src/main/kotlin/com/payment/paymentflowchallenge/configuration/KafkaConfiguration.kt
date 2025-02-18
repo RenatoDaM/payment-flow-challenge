@@ -1,54 +1,61 @@
 package com.payment.paymentflowchallenge.configuration
 
-import org.apache.kafka.clients.admin.Admin
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.springframework.boot.context.properties.ConfigurationProperties
+import com.payment.paymentflowchallenge.dataprovider.queue.kafka.dto.NotificationDTO
+import org.apache.kafka.clients.admin.NewTopic
+import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.common.serialization.StringSerializer
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.io.IOException
-import java.io.InputStream
-import java.util.*
+import org.springframework.kafka.core.DefaultKafkaProducerFactory
+import org.springframework.kafka.core.KafkaAdmin
+import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.kafka.core.ProducerFactory
+import org.springframework.kafka.support.serializer.JsonSerializer
 
 @Configuration
-class KafkaConfiguration {
+class KafkaConfiguration(
+    @Value(value = "\${spring.kafka.bootstrap-servers}")
+    private val bootstrapAddress: String,
+
+    @Value(value = "\${kafka.topics.transfer-notification}")
+    private val transferNotificationTopicName: String
+) {
 
     @Bean
-    fun kafkaProducer(): KafkaProducer<String, String> {
-        val kafkaProps = loadProperties()
-        return KafkaProducer(kafkaProps)
+    fun producerFactory(): ProducerFactory<String, Any> {
+        return DefaultKafkaProducerFactory(kafkaProperties(), StringSerializer(), JsonSerializer())
     }
 
     @Bean
-    fun adminClient(): Admin {
-        val kafkaProps = loadProperties()
-        return Admin.create(kafkaProps)
+    fun kafkaAdmin(): KafkaAdmin {
+        return KafkaAdmin(kafkaProperties())
     }
 
-    private fun loadProperties(): Properties {
-        return try {
-            val props = Properties()
-            val inputStream: InputStream = this::class.java.classLoader.getResourceAsStream("producer.properties")
-                ?: throw RuntimeException("producer.properties file not found in classpath")
+    private fun kafkaProperties(): Map<String, Any> {
+        val notificationDTOClassName = NotificationDTO::class.java.name
+        val notificationDTOClassSimpleName = NotificationDTO::class.simpleName
+        val notificationTypeMapping = "$notificationDTOClassSimpleName:$notificationDTOClassName"
 
-            inputStream.use { reader ->
-                props.load(reader)
-            }
-
-            return props
-        } catch (e: IOException) {
-            e.printStackTrace()
-            throw RuntimeException("Failed to load Kafka properties or create producer", e)
-        }
+        return mapOf(
+            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapAddress,
+            ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to String::class.java,
+            ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JsonSerializer::class.java,
+            ProducerConfig.SECURITY_PROVIDERS_CONFIG to "PLAINTEXT",
+            ProducerConfig.CONNECTIONS_MAX_IDLE_MS_CONFIG to 180000,
+            JsonSerializer.TYPE_MAPPINGS to notificationTypeMapping
+        )
     }
+
+    @Bean
+    fun kafkaTemplate(): KafkaTemplate<String, Any> {
+        return KafkaTemplate(producerFactory())
+    }
+
+    @Bean
+    fun transferNotificationTopic(): NewTopic {
+        return NewTopic(transferNotificationTopicName, 1, 1.toShort())
+    }
+
+
 }
-
-@ConfigurationProperties(prefix = "kafka")
-data class TopicInitializerProperties(
-    val topics: List<TopicSpecification>
-)
-
-data class TopicSpecification(
-    val name: String,
-    val partitions: Int,
-    val replicationFactor: Short = 1
-)
