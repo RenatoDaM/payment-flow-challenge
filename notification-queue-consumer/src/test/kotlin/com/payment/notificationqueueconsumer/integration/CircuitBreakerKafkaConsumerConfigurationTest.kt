@@ -11,10 +11,7 @@ import com.payment.notificationqueueconsumer.dataprovider.client.notification.dt
 import com.payment.notificationqueueconsumer.entrypoint.queue.kafka.KafkaQueueConsumer
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -31,15 +28,14 @@ import org.testcontainers.containers.Network
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.kafka.KafkaContainer
 import java.math.BigDecimal
+import java.time.Duration
 
 
 @SpringBootTest
 @DirtiesContext
 @TestPropertySource(
     properties = [
-        "spring.kafka.consumer.auto-offset-reset=earliest",
-        "spring.kafka.consumer.session-timeout-ms=60000",
-        "spring.kafka.consumer.heartbeat-interval-ms=15000"
+        "spring.kafka.consumer.auto-offset-reset=earliest"
     ]
 )
 class CircuitBreakerKafkaConsumerConfigurationTest {
@@ -54,25 +50,24 @@ class CircuitBreakerKafkaConsumerConfigurationTest {
 
     @BeforeEach
     fun setup() {
-        EXTERNAL_SERVICE.stubFor(post("/notify")
-            .willReturn(serverError()))
 
     }
 
     @Test
     fun `should pause Kafka consumer when Circuit Breaker transitions to OPEN`() {
-        kafkaTemplate.send("transfer-notification", NotificationDTO(1, "teste@gmail.com", BigDecimal(100), 1))
-        kafkaTemplate.send("transfer-notification", NotificationDTO(2, "teste@gmail.com", BigDecimal(100), 1))
-        kafkaTemplate.send("transfer-notification", NotificationDTO(3, "teste@gmail.com", BigDecimal(100), 1))
-        kafkaTemplate.send("transfer-notification", NotificationDTO(4, "teste@gmail.com", BigDecimal(100), 1))
-        kafkaTemplate.send("transfer-notification", NotificationDTO(5, "teste@gmail.com", BigDecimal(100), 1))
-        kafkaTemplate.send("transfer-notification", NotificationDTO(6, "teste@gmail.com", BigDecimal(100), 1))
-        kafkaTemplate.send("transfer-notification", NotificationDTO(7, "teste@gmail.com", BigDecimal(100), 1))
-        Thread.sleep(8000)
-        val circuitBreaker = circuitBreakerRegistry.circuitBreaker("notification-service-A")
-        assert(circuitBreaker.state == CircuitBreaker.State.OPEN)
+        EXTERNAL_SERVICE.stubFor(post("/notify")
+            .willReturn(serverError()))
 
-        //verify(circuitBreaker).transitionToOpenState()
+        repeat(10) {
+            kafkaTemplate
+                .send("transfer-notification", NotificationDTO(it + 1L, "teste@gmail.com", BigDecimal(100), 1))
+        }
+
+        assertTimeoutPreemptively(Duration.ofSeconds(10)) {
+            while (circuitBreakerRegistry.circuitBreaker("notification-service-A").state != CircuitBreaker.State.OPEN) {
+                Thread.sleep(500)
+            }
+        }
     }
 
 /*    @Test
@@ -84,11 +79,11 @@ class CircuitBreakerKafkaConsumerConfigurationTest {
         private val network: Network = Network.newNetwork()
 
         @Container
-        val kafka = KafkaContainer("apache/kafka:3.7.2").withNetwork(network)
+        val kafka: KafkaContainer = KafkaContainer("apache/kafka:3.7.2").withNetwork(network)
 
         @RegisterExtension
         @JvmStatic
-        val EXTERNAL_SERVICE = WireMockExtension.newInstance()
+        val EXTERNAL_SERVICE: WireMockExtension = WireMockExtension.newInstance()
             .options(WireMockConfiguration.wireMockConfig().port(9090))
             .build()
 
