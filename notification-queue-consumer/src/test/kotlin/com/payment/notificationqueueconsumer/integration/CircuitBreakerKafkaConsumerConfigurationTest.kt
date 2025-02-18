@@ -1,32 +1,22 @@
 package com.payment.notificationqueueconsumer.integration
 
-import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration
-import com.github.tomakehurst.wiremock.junit5.WireMockExtension
-import com.payment.notificationqueueconsumer.configuration.KafkaConfiguration
-import com.payment.notificationqueueconsumer.core.usecase.SendNotificationUseCase
-import com.payment.notificationqueueconsumer.dataprovider.client.notification.NotificationServiceClient
+import com.payment.notificationqueueconsumer.configuration.KafkaTestContainer.createKafkaTestContainer
+import com.payment.notificationqueueconsumer.configuration.WireMockConfiguration.createWireMock
 import com.payment.notificationqueueconsumer.dataprovider.client.notification.dto.NotificationDTO
-import com.payment.notificationqueueconsumer.entrypoint.queue.kafka.KafkaQueueConsumer
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.context.TestPropertySource
-import org.springframework.web.reactive.function.client.WebClient
 import org.testcontainers.containers.Network
 import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.kafka.KafkaContainer
 import java.math.BigDecimal
 import java.time.Duration
 
@@ -46,7 +36,6 @@ class CircuitBreakerKafkaConsumerConfigurationTest {
 
     @Autowired
     private lateinit var kafkaTemplate: KafkaTemplate<String, Any>
-
 
     @BeforeEach
     fun setup() {
@@ -76,16 +65,12 @@ class CircuitBreakerKafkaConsumerConfigurationTest {
     }*/
 
     companion object {
-        private val network: Network = Network.newNetwork()
-
         @Container
-        val kafka: KafkaContainer = KafkaContainer("apache/kafka:3.7.2").withNetwork(network)
+        val kafka = createKafkaTestContainer()
 
         @RegisterExtension
         @JvmStatic
-        val EXTERNAL_SERVICE: WireMockExtension = WireMockExtension.newInstance()
-            .options(WireMockConfiguration.wireMockConfig().port(9090))
-            .build()
+        val EXTERNAL_SERVICE = createWireMock()
 
         @JvmStatic
         @BeforeAll

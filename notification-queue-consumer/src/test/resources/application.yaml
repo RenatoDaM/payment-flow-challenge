@@ -14,6 +14,7 @@ spring:
 test:
   topic: embedded-test-topic
 
+# pointing at wiremock
 notification:
   service:
     base-url: http://localhost:9090
@@ -26,7 +27,7 @@ resilience4j:
     configs:
       default:
         slidingWindowType: COUNT_BASED
-        slidingWindowSize: 10
+        slidingWindowSize: 5
         automaticTransitionFromOpenToHalfOpenEnabled: true
         permittedNumberOfCallsInHalfOpenState: 3
         slowCallDurationThreshold: 4s
