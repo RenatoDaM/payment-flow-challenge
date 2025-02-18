@@ -47,35 +47,19 @@ class TransferOptimisticLockingTest (
         val usersBalance = BigDecimal(1000.00)
 
         payer = userRepository.save(
-            User(
-                null,
-                "Payer Test",
-                "12345678901",
-                "payer@test.com",
-                "password",
-                UserRoleEnum.COMMON,
-                usersBalance,
-                null
-            )
+            User(null, "Payer Test", "12345678901",
+                "payer@test.com", "password", UserRoleEnum.COMMON, usersBalance, null)
         ).block()!!
 
         payee = userRepository.save(
-            User(
-                null,
-                "Payee Test",
-                "10987654321",
-                "payee@test.com",
-                "password",
-                UserRoleEnum.MERCHANT,
-                usersBalance,
-                null
+            User(null, "Payee Test", "10987654321",
+                "payee@test.com", "password", UserRoleEnum.MERCHANT, usersBalance, null
             )
         ).block()!!
     }
 
     @Test
     fun `should throw OptimisticLockingFailureException when two transactions update the same entity concurrently`() {
-        // TODO: search a better solution than using .setScale in all variables
         val transactionsValue = BigDecimal(50.00).setScale(2)
         // one transaction should fail due optimistic locking
         val payerExpectedFinalBalance = payer.balance - transactionsValue
