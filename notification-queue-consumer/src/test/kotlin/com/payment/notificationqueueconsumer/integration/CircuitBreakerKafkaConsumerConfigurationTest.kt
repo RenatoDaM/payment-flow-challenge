@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.payment.notificationqueueconsumer.configuration.KafkaTestContainer.createKafkaTestContainer
 import com.payment.notificationqueueconsumer.configuration.WireMockConfiguration.createWireMock
 import com.payment.notificationqueueconsumer.dataprovider.client.notification.dto.NotificationDTO
+import com.payment.notificationqueueconsumer.dataprovider.queue.KafkaManager
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import org.junit.jupiter.api.*
@@ -37,6 +38,9 @@ class CircuitBreakerKafkaConsumerConfigurationTest {
     @Autowired
     private lateinit var kafkaTemplate: KafkaTemplate<String, Any>
 
+    @Autowired
+    private lateinit var kafkaManager: KafkaManager
+
     @BeforeEach
     fun setup() {
 
@@ -56,16 +60,43 @@ class CircuitBreakerKafkaConsumerConfigurationTest {
         }
 
         Awaitility.await()
-            .atMost(5, TimeUnit.SECONDS)
+            .atMost(8, TimeUnit.SECONDS)
             .untilAsserted {
                 assert(circuitBreaker.state == CircuitBreaker.State.OPEN)
             }
+
+        Awaitility.await()
+            .atMost(8, TimeUnit.SECONDS)
+            .untilAsserted {
+                assert(kafkaManager.isPaused())
+            }
     }
 
-/*    @Test
+    @Test
     fun `should resume Kafka consumer when Circuit Breaker transitions to HALF_OPEN`() {
+        val circuitBreaker = circuitBreakerRegistry.circuitBreaker("notification-service-A")
+        circuitBreaker.transitionToOpenState()
 
-    }*/
+        EXTERNAL_SERVICE.stubFor(post("/notify")
+            .willReturn(ok()))
+
+        repeat(3) {
+            kafkaTemplate
+                .send("transfer-notification", NotificationDTO(it + 1L, "teste@gmail.com", BigDecimal(100), 1))
+        }
+
+        Awaitility.await()
+            .atMost(25, TimeUnit.SECONDS)
+            .untilAsserted {
+                assert(circuitBreaker.state == CircuitBreaker.State.CLOSED)
+            }
+
+        Awaitility.await()
+            .atMost(25, TimeUnit.SECONDS)
+            .untilAsserted {
+                assert(!kafkaManager.isPaused())
+            }
+    }
 
     companion object {
 

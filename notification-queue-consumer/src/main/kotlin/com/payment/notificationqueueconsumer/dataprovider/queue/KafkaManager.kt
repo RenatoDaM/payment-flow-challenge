@@ -13,4 +13,8 @@ class KafkaManager(private val registry: KafkaListenerEndpointRegistry) {
     fun resume() {
         registry.listenerContainers.forEach(MessageListenerContainer::resume)
     }
+
+    fun isPaused(): Boolean {
+        return registry.listenerContainers.all { it.isPauseRequested }
+    }
 }
