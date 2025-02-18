@@ -8,6 +8,7 @@ import com.payment.notificationqueueconsumer.dataprovider.queue.KafkaManager
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -15,7 +16,6 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
-import org.springframework.test.context.TestPropertySource
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.shaded.org.awaitility.Awaitility
 import java.math.BigDecimal
@@ -24,11 +24,6 @@ import java.util.concurrent.TimeUnit
 
 @SpringBootTest
 @DirtiesContext
-@TestPropertySource(
-    properties = [
-        "spring.kafka.consumer.auto-offset-reset=earliest"
-    ]
-)
 class CircuitBreakerKafkaConsumerConfigurationTest {
 
     @Autowired
@@ -62,13 +57,13 @@ class CircuitBreakerKafkaConsumerConfigurationTest {
         Awaitility.await()
             .atMost(8, TimeUnit.SECONDS)
             .untilAsserted {
-                assert(circuitBreaker.state == CircuitBreaker.State.OPEN)
+                assertEquals(CircuitBreaker.State.OPEN, circuitBreaker.state, "Circuit Breaker should be OPEN")
             }
 
         Awaitility.await()
             .atMost(8, TimeUnit.SECONDS)
             .untilAsserted {
-                assert(kafkaManager.isPaused())
+                assertEquals(true, kafkaManager.isPaused(), "Kafka consumer should be PAUSED, because Circuit Breaker is OPEN")
             }
     }
 
@@ -88,13 +83,13 @@ class CircuitBreakerKafkaConsumerConfigurationTest {
         Awaitility.await()
             .atMost(25, TimeUnit.SECONDS)
             .untilAsserted {
-                assert(circuitBreaker.state == CircuitBreaker.State.CLOSED)
+                assertEquals(CircuitBreaker.State.CLOSED, circuitBreaker.state, "Circuit Breaker should be CLOSED")
             }
 
         Awaitility.await()
             .atMost(25, TimeUnit.SECONDS)
             .untilAsserted {
-                assert(!kafkaManager.isPaused())
+                assertEquals(false, kafkaManager.isPaused(), "Kafka consumer shouldn't be PAUSED, because Circuit Breaker is CLOSED")
             }
     }
 
