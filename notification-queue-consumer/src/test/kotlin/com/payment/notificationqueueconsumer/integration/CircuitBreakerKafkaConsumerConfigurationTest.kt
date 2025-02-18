@@ -15,10 +15,10 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.context.TestPropertySource
-import org.testcontainers.containers.Network
 import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.shaded.org.awaitility.Awaitility
 import java.math.BigDecimal
-import java.time.Duration
+import java.util.concurrent.TimeUnit
 
 
 @SpringBootTest
@@ -44,6 +44,9 @@ class CircuitBreakerKafkaConsumerConfigurationTest {
 
     @Test
     fun `should pause Kafka consumer when Circuit Breaker transitions to OPEN`() {
+        val circuitBreaker = circuitBreakerRegistry.circuitBreaker("notification-service-A")
+        circuitBreaker.transitionToClosedState()
+
         EXTERNAL_SERVICE.stubFor(post("/notify")
             .willReturn(serverError()))
 
@@ -52,11 +55,11 @@ class CircuitBreakerKafkaConsumerConfigurationTest {
                 .send("transfer-notification", NotificationDTO(it + 1L, "teste@gmail.com", BigDecimal(100), 1))
         }
 
-        assertTimeoutPreemptively(Duration.ofSeconds(10)) {
-            while (circuitBreakerRegistry.circuitBreaker("notification-service-A").state != CircuitBreaker.State.OPEN) {
-                Thread.sleep(500)
+        Awaitility.await()
+            .atMost(5, TimeUnit.SECONDS)
+            .untilAsserted {
+                assert(circuitBreaker.state == CircuitBreaker.State.OPEN)
             }
-        }
     }
 
 /*    @Test
@@ -65,6 +68,7 @@ class CircuitBreakerKafkaConsumerConfigurationTest {
     }*/
 
     companion object {
+
         @Container
         val kafka = createKafkaTestContainer()
 
@@ -89,5 +93,6 @@ class CircuitBreakerKafkaConsumerConfigurationTest {
         fun registerKafkaContainer(registry: DynamicPropertyRegistry) {
             registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers)
         }
+
     }
 }

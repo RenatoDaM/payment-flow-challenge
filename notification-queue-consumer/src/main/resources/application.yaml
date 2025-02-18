@@ -23,8 +23,9 @@ resilience4j:
         slowCallDurationThreshold: 4s
         slowCallRateThreshold: 50
         failureRateThreshold: 50
-        waitDurationInOpenState: 10s
+        waitDurationInOpenState: 20000
         minimumNumberOfCalls: 3
+        maxWaitDurationInHalfOpenState: 3s
     instances:
       notification-service-A:
         baseConfig: default

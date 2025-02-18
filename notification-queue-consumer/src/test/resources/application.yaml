@@ -11,9 +11,6 @@ spring:
       - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
       - org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
 
-test:
-  topic: embedded-test-topic
-
 # pointing at wiremock
 notification:
   service:
