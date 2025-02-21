@@ -1,23 +1,25 @@
 package com.payment.paymentflowchallenge.entrypoint.api.dto
 
 import com.payment.paymentflowchallenge.core.common.enums.UserRoleEnum
+import com.payment.paymentflowchallenge.core.common.validation.DocumentNumber
 import com.payment.paymentflowchallenge.core.entity.User
-import jakarta.validation.constraints.DecimalMin
-import jakarta.validation.constraints.Digits
-import jakarta.validation.constraints.Email
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.*
 import java.math.BigDecimal
 
 data class CreateUserRequest (
     @field:NotBlank
+    @field:Size(max = 255)
     private val fullName: String,
     @field:NotBlank
+    @field:Size(max = 40)
+    @field:DocumentNumber
     private val documentNumber: String,
     @field:NotBlank
+    @field:Size(max = 255)
     @field:Email
     private val email: String,
     @field:NotBlank
+    @field:Size(max = 255, min = 8)
     private val password: String,
     @field:NotNull
     private val role: UserRoleEnum,

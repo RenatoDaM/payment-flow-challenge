@@ -40,7 +40,7 @@ class KafkaConfiguration(
         val notificationDTOPackageName = NotificationDTO::class.java.`package`
 
         return mapOf(
-            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to "PLAINTEXT://localhost:9092",
+            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapAddress,
             ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to String::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JsonDeserializer::class.java,

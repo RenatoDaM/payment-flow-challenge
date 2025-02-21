@@ -40,7 +40,7 @@ class KafkaQueueConsumer(
                         "Retrying or sending to dlt", error)
             }
             .doOnSuccess {
-                log.info("Message with transferId $transferId from topic $topic successfully processed.")
+                log.info("Message with transferId $transferId from topic $topic was successfully processed.")
             }
     }
 
@@ -53,10 +53,10 @@ class KafkaQueueConsumer(
 
         return sendNotificationUseCase.sendNotification(notificationDTO)
             .doOnError { error ->
-                log.error("Error processing message at dead letter queue with transferId $transferId", error)
+                log.error("Error processing message in DLT with transferId $transferId", error)
             }
             .doOnSuccess {
-                log.info("Message with transferId $transferId from topic $topic successfully processed")
+                log.info("Message in DLT with transferId $transferId from topic $topic was successfully processed")
             }
     }
 }
