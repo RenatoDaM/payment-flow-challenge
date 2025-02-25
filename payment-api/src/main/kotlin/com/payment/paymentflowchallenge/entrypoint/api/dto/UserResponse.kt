@@ -2,8 +2,11 @@ package com.payment.paymentflowchallenge.entrypoint.api.dto
 
 import com.payment.paymentflowchallenge.core.common.enums.UserRoleEnum
 import com.payment.paymentflowchallenge.core.entity.User
+import org.springframework.hateoas.RepresentationModel
+import org.springframework.hateoas.server.core.Relation
 import java.math.BigDecimal
 
+@Relation(collectionRelation = "users")
 class UserResponse(
     val id: Long,
     val fullName: String,
@@ -11,7 +14,8 @@ class UserResponse(
     val email: String,
     val role: UserRoleEnum,
     val balance: BigDecimal
-) {
+): RepresentationModel<UserResponse>() {
+
     companion object {
         fun fromEntity(user: User): UserResponse {
             return UserResponse(
@@ -23,5 +27,6 @@ class UserResponse(
                 user.balance
             )
         }
+
     }
 }

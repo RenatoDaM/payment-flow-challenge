@@ -1,5 +1,6 @@
-package com.payment.paymentflowchallenge.core.exception.handler
+package com.payment.paymentflowchallenge.entrypoint.exception.handler
 
+import com.payment.paymentflowchallenge.entrypoint.exception.ResourceAlreadyExistsException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.dao.OptimisticLockingFailureException
@@ -52,6 +53,14 @@ class RestControllerAdvice: ResponseEntityExceptionHandler() {
         val problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Invalid input or argument.")
         problemDetail.detail = "Invalid input provided: ${ex.message}"
         problemDetail.title = "Bad Request Error"
+        return problemDetail
+    }
+
+    @ExceptionHandler(ResourceAlreadyExistsException::class)
+    fun handleResourceAlreadyExistsException(ex: ResourceAlreadyExistsException): ProblemDetail {
+        val problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Resource already exists")
+        problemDetail.detail = ex.localizedMessage
+        problemDetail.title = "Conflict Error"
         return problemDetail
     }
 

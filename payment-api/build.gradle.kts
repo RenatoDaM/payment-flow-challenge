@@ -28,12 +28,12 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("jakarta.validation:jakarta.validation-api:3.1.0")
     implementation("org.springframework.boot:spring-boot-starter-validation:3.4.1")
     implementation("org.liquibase:liquibase-core:4.30.0")
     implementation("org.postgresql:r2dbc-postgresql:1.0.7.RELEASE")
     implementation("org.postgresql:postgresql:42.7.4")
+    implementation("org.springframework.security:spring-security-crypto:6.4.3")
 }
 
 kotlin {

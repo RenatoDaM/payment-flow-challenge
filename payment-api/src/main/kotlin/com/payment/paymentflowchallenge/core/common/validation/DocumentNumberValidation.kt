@@ -17,38 +17,38 @@ annotation class DocumentNumber(
 )
 
 class DocumentNumberValidator : ConstraintValidator<DocumentNumber, String> {
-    override fun isValid(value: String?, context: ConstraintValidatorContext): Boolean {
+    override fun isValid(value: String?, context: ConstraintValidatorContext?): Boolean {
         if (value.isNullOrBlank()) return false
-        val digits = value.replace("""\D""".toRegex(), "")
-        return isValidCPF(digits) || isValidCNPJ(digits)
+        val cleanedValue = value.replace("[^0-9]".toRegex(), "")
+
+        return isCpf(cleanedValue) || isCnpj(cleanedValue)
     }
 
-    private fun isValidCPF(cpf: String): Boolean {
-        if (cpf.length != 11 || cpf.all { it == cpf[0] }) return false
-        return cpf.calculateCheckDigits(9) == cpf.substring(9).toInt()
+    private fun isCpf(cpf: String): Boolean {
+        if (cpf.length != 11) return false
+
+        val digits = cpf.map { it.toString().toInt() }
+
+        val sum1 = digits.take(9).withIndex().sumOf { (i, num) -> num * (10 - i) }
+        val sum2 = digits.take(9).withIndex().sumOf { (i, num) -> num * (11 - i) }
+
+        val firstCheck = (sum1 % 11 < 2) == (digits[9] == 0)
+        val secondCheck = (sum2 % 11 < 2) == (digits[10] == 0)
+
+        return firstCheck && secondCheck
     }
 
-    private fun isValidCNPJ(cnpj: String): Boolean {
+    private fun isCnpj(cnpj: String): Boolean {
         if (cnpj.length != 14) return false
-        return cnpj.calculateCheckDigits(12) == cnpj.substring(12).toInt()
-    }
 
-    private fun String.calculateCheckDigits(length: Int): Int {
-        val weights = (2..9).toList().reversed() + (2..9).toList()
-        val firstDigit = this.take(length).map { it.toString().toInt() }
-            .reversed()
-            .mapIndexed { index, num -> num * weights[index] }
-            .sum()
-            .let { 11 - (it % 11) }
-            .let { if (it >= 10) 0 else it }
+        val digits = cnpj.map { it.toString().toInt() }
 
-        val secondDigit = (this.take(length) + firstDigit).map { it.toString().toInt() }
-            .reversed()
-            .mapIndexed { index, num -> num * weights[index] }
-            .sum()
-            .let { 11 - (it % 11) }
-            .let { if (it >= 10) 0 else it }
+        val sum1 = digits.take(12).withIndex().sumOf { (i, num) -> num * (5 - i % 8) }
+        val sum2 = digits.take(12).withIndex().sumOf { (i, num) -> num * (6 - i % 8) }
 
-        return firstDigit * 10 + secondDigit
+        val firstCheck = (sum1 % 11 < 2) == (digits[12] == 0)
+        val secondCheck = (sum2 % 11 < 2) == (digits[13] == 0)
+
+        return firstCheck && secondCheck
     }
 }
