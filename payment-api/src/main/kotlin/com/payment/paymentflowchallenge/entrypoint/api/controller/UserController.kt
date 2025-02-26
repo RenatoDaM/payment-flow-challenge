@@ -19,6 +19,7 @@ import java.math.BigDecimal
 @RestController
 @RequestMapping("/v1/users")
 class UserController(private val createUserUseCase: CreateUserUseCase) {
+
     @PostMapping
     fun createUser(@Valid @RequestBody createUserRequest: CreateUserRequest): Mono<EntityModel<UserResponse>> {
         return createUserUseCase.createUser(createUserRequest)

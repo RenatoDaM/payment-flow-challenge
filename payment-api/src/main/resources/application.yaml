@@ -26,11 +26,6 @@ spring:
       enabled: true
   web:
     locale: en_US
-logging:
-  level:
-    org:
-      springframework:
-        r2dbc: DEBUG
 
 auth:
   service:
@@ -39,3 +34,10 @@ auth:
 kafka:
   topics:
     transfer-notification: transfer-notification
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.boot.web: DEBUG
+    org.springframework.validation: DEBUG
+    com.payment: DEBUG

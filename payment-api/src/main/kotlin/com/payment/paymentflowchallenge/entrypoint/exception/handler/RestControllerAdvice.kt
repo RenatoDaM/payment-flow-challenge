@@ -11,15 +11,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.reactive.function.client.WebClientResponseException
-import org.springframework.web.reactive.result.method.annotation.ResponseEntityExceptionHandler
 
 
 @RestControllerAdvice
-class RestControllerAdvice: ResponseEntityExceptionHandler() {
+class RestControllerAdvice {
     private final val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    protected fun handleNotFound(ex: MethodArgumentNotValidException, request: WebRequest): ProblemDetail {
+    fun handleNotFound(ex: MethodArgumentNotValidException, request: WebRequest): ProblemDetail {
         val problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "The request was processed, but one or more fields contain invalid values")
         problemDetail.title = "Validation Error"
         val errorDetails: MutableList<Map<String, String?>> = ArrayList()
@@ -79,4 +78,15 @@ class RestControllerAdvice: ResponseEntityExceptionHandler() {
     """.trimIndent()
         return problemDetail
     }
+
+    @ExceptionHandler(Exception::class)
+    fun handleGeneralException(ex: Exception): ProblemDetail {
+        log.error("Unexpected error occurred", ex)
+
+        val problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.")
+        problemDetail.title = "Internal Server Error"
+        problemDetail.detail = "No further details available"
+        return problemDetail
+    }
+
 }
