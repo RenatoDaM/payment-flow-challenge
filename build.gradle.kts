@@ -39,7 +39,7 @@ subprojects {
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
         implementation("org.springframework.kafka:spring-kafka:3.3.2")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
-        implementation("org.springframework.hateoas:spring-hateoas:2.4.1")
+        implementation("org.springframework.boot:spring-boot-starter-hateoas")
         compileOnly("org.projectlombok:lombok")
         annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
         annotationProcessor("org.projectlombok:lombok")

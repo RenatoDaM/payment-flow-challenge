@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -86,6 +87,16 @@ class RestControllerAdvice {
         val problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.")
         problemDetail.title = "Internal Server Error"
         problemDetail.detail = "No further details available"
+        return problemDetail
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleGeneralException(ex: HttpMessageNotReadableException): ProblemDetail {
+        log.error("HTTP Message Not Readable", ex)
+
+        val problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "HTTP Message Not Readable")
+        problemDetail.title = "HTTP Message Not Readable"
+        problemDetail.detail = ex.message
         return problemDetail
     }
 

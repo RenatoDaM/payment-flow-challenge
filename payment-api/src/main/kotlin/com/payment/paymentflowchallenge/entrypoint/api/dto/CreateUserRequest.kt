@@ -9,27 +9,28 @@ import java.math.BigDecimal
 data class CreateUserRequest (
     @field:NotBlank
     @field:Size(max = 255)
-     val fullName: String,
+     val fullName: String?,
     @field:NotBlank
     @field:Size(max = 40)
-     val documentNumber: String,
+    @field:DocumentNumber
+     val documentNumber: String?,
     @field:NotBlank
     @field:Size(max = 255)
     @field:Email
-     val email: String,
+     val email: String?,
     @field:NotBlank
     @field:Size(max = 255, min = 8)
-    val password: String,
+    val password: String?,
     @field:NotNull
      val role: UserRoleEnum
 ) {
     fun toEntity(): User {
         return User(
             id = null,
-            email = email,
-            password = password,
-            fullName = fullName,
-            documentNumber = documentNumber,
+            email = email!!,
+            password = password!!,
+            fullName = fullName!!,
+            documentNumber = documentNumber!!,
             role = role,
             balance = BigDecimal(0.00),
             version = null

@@ -18,19 +18,18 @@ annotation class DocumentNumber(
 
 class DocumentNumberValidator : ConstraintValidator<DocumentNumber, String> {
 
-    override fun isValid(value: String?, context: ConstraintValidatorContext): Boolean {
-        if (value.isNullOrBlank()) return false
-        val cleanedValue = value.replace("[^0-9]".toRegex(), "")
+    override fun isValid(value: String, context: ConstraintValidatorContext): Boolean {
+        if (!hasOnlyNumbers(value)) return false
 
-        return isValidCPF(cleanedValue) || isValidCNPJ(cleanedValue)
+        return isValidCPF(value) || isValidCNPJ(value)
     }
+
+    private fun hasOnlyNumbers(value: String) =
+        value.matches(Regex("^\\d+$"))
+
 
     private val pesoCPF: IntArray = intArrayOf(11, 10, 9, 8, 7, 6, 5, 4, 3, 2)
     private val pesoCNPJ: IntArray = intArrayOf(6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
-
-    fun isValid(cpfCnpj: String): Boolean {
-        return (isValidCPF(cpfCnpj) || isValidCNPJ(cpfCnpj))
-    }
 
     private fun calcularDigito(str: String, peso: IntArray): Int {
         var soma = 0
@@ -50,10 +49,7 @@ class DocumentNumberValidator : ConstraintValidator<DocumentNumber, String> {
     }
 
     private fun isValidCPF(cpf: String): Boolean {
-        var cpf: String? = cpf
-        cpf = cpf!!.trim { it <= ' ' }.replace(".", "").replace("-", "")
-        if ((cpf == null) || (cpf.length != 11)) return false
-
+        if (cpf.length != 11) return false
         for (j in 0..9) if (padLeft(j.toString(), Character.forDigit(j, 10)) == cpf) return false
 
         val digito1 = calcularDigito(cpf.substring(0, 9), pesoCPF)
@@ -62,9 +58,7 @@ class DocumentNumberValidator : ConstraintValidator<DocumentNumber, String> {
     }
 
     private fun isValidCNPJ(cnpj: String): Boolean {
-        var cnpj: String? = cnpj
-        cnpj = cnpj!!.trim { it <= ' ' }.replace(".", "").replace("-", "")
-        if ((cnpj == null) || (cnpj.length != 14)) return false
+        if (cnpj.length != 14) return false
 
         val digito1 = calcularDigito(cnpj.substring(0, 12), pesoCNPJ)
         val digito2 = calcularDigito(cnpj.substring(0, 12) + digito1, pesoCNPJ)
