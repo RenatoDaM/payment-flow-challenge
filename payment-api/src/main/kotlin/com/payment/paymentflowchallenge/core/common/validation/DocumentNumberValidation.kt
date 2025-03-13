@@ -28,20 +28,20 @@ class DocumentNumberValidator : ConstraintValidator<DocumentNumber, String> {
         value.matches(Regex("^\\d+$"))
 
 
-    private val pesoCPF: IntArray = intArrayOf(11, 10, 9, 8, 7, 6, 5, 4, 3, 2)
-    private val pesoCNPJ: IntArray = intArrayOf(6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
+    private val cpfMultipliers: IntArray = intArrayOf(11, 10, 9, 8, 7, 6, 5, 4, 3, 2)
+    private val cnpjMultipliers: IntArray = intArrayOf(6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
 
-    private fun calcularDigito(str: String, peso: IntArray): Int {
-        var soma = 0
-        var indice = str.length - 1
-        var digito: Int
-        while (indice >= 0) {
-            digito = str.substring(indice, indice + 1).toInt()
-            soma += digito * peso[peso.size - str.length + indice]
-            indice--
+    private fun calculateDigit(str: String, weight: IntArray): Int {
+        var sum = 0
+        var index = str.length - 1
+        var digit: Int
+        while (index >= 0) {
+            digit = str.substring(index, index + 1).toInt()
+            sum += digit * weight[weight.size - str.length + index]
+            index--
         }
-        soma = 11 - soma % 11
-        return if (soma > 9) 0 else soma
+        sum = 11 - sum % 11
+        return if (sum > 9) 0 else sum
     }
 
     private fun padLeft(text: String, character: Char): String {
@@ -52,16 +52,16 @@ class DocumentNumberValidator : ConstraintValidator<DocumentNumber, String> {
         if (cpf.length != 11) return false
         for (j in 0..9) if (padLeft(j.toString(), Character.forDigit(j, 10)) == cpf) return false
 
-        val digito1 = calcularDigito(cpf.substring(0, 9), pesoCPF)
-        val digito2 = calcularDigito(cpf.substring(0, 9) + digito1, pesoCPF)
-        return cpf == cpf.substring(0, 9) + digito1.toString() + digito2.toString()
+        val digit1 = calculateDigit(cpf.substring(0, 9), cpfMultipliers)
+        val digit2 = calculateDigit(cpf.substring(0, 9) + digit1, cpfMultipliers)
+        return cpf == cpf.substring(0, 9) + digit1.toString() + digit2.toString()
     }
 
     private fun isValidCNPJ(cnpj: String): Boolean {
         if (cnpj.length != 14) return false
 
-        val digito1 = calcularDigito(cnpj.substring(0, 12), pesoCNPJ)
-        val digito2 = calcularDigito(cnpj.substring(0, 12) + digito1, pesoCNPJ)
-        return cnpj == cnpj.substring(0, 12) + digito1.toString() + digito2.toString()
+        val digit1 = calculateDigit(cnpj.substring(0, 12), cnpjMultipliers)
+        val digit2 = calculateDigit(cnpj.substring(0, 12) + digit1, cnpjMultipliers)
+        return cnpj == cnpj.substring(0, 12) + digit1.toString() + digit2.toString()
     }
 }
