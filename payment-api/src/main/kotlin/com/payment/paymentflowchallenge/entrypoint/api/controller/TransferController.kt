@@ -6,12 +6,14 @@ import com.payment.paymentflowchallenge.entrypoint.api.dto.TransferRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
 @RestController
+@RequestMapping("/v1/transfers")
 class TransferController(private val transferUseCase: TransferUseCase) {
-  @PostMapping("/transfer")
+  @PostMapping
   fun transfer(@RequestBody transferRequest: TransferRequest): Mono<ResponseEntity<Transfer>> {
     return transferUseCase.transfer(transferRequest.toEntity())
       .map { ResponseEntity.ok(it) }

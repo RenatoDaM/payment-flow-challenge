@@ -49,7 +49,7 @@ class KafkaQueueConsumer(
         notificationDTO: NotificationDTO, @Header(KafkaHeaders.RECEIVED_TOPIC) topic: String
     ): Mono<ResponseEntity<Void>> {
         val transferId = notificationDTO.transferId
-        log.info("Event on dlt topic={}, payload={}", topic, notificationDTO.toJson())
+        log.info("Event on DLT topic={}, payload={}", topic, notificationDTO.toJson())
 
         return sendNotificationUseCase.sendNotification(notificationDTO)
             .doOnError { error ->

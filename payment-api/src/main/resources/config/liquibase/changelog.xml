@@ -6,4 +6,5 @@
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
     <include file="2025-01-12-initial-setup.sql" relativeToChangelogFile="true"/>
+    <include file="2025-02-23-test-users.sql" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -17,38 +17,51 @@ annotation class DocumentNumber(
 )
 
 class DocumentNumberValidator : ConstraintValidator<DocumentNumber, String> {
-    override fun isValid(value: String?, context: ConstraintValidatorContext): Boolean {
-        if (value.isNullOrBlank()) return false
-        val digits = value.replace("""\D""".toRegex(), "")
-        return isValidCPF(digits) || isValidCNPJ(digits)
+
+    override fun isValid(value: String, context: ConstraintValidatorContext): Boolean {
+        if (!hasOnlyNumbers(value)) return false
+
+        return isValidCPF(value) || isValidCNPJ(value)
+    }
+
+    private fun hasOnlyNumbers(value: String) =
+        value.matches(Regex("^\\d+$"))
+
+
+    private val cpfMultipliers: IntArray = intArrayOf(11, 10, 9, 8, 7, 6, 5, 4, 3, 2)
+    private val cnpjMultipliers: IntArray = intArrayOf(6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2)
+
+    private fun calculateDigit(str: String, weight: IntArray): Int {
+        var sum = 0
+        var index = str.length - 1
+        var digit: Int
+        while (index >= 0) {
+            digit = str.substring(index, index + 1).toInt()
+            sum += digit * weight[weight.size - str.length + index]
+            index--
+        }
+        sum = 11 - sum % 11
+        return if (sum > 9) 0 else sum
+    }
+
+    private fun padLeft(text: String, character: Char): String {
+        return String.format("%11s", text).replace(' ', character)
     }
 
     private fun isValidCPF(cpf: String): Boolean {
-        if (cpf.length != 11 || cpf.all { it == cpf[0] }) return false
-        return cpf.calculateCheckDigits(9) == cpf.substring(9).toInt()
+        if (cpf.length != 11) return false
+        for (j in 0..9) if (padLeft(j.toString(), Character.forDigit(j, 10)) == cpf) return false
+
+        val digit1 = calculateDigit(cpf.substring(0, 9), cpfMultipliers)
+        val digit2 = calculateDigit(cpf.substring(0, 9) + digit1, cpfMultipliers)
+        return cpf == cpf.substring(0, 9) + digit1.toString() + digit2.toString()
     }
 
     private fun isValidCNPJ(cnpj: String): Boolean {
         if (cnpj.length != 14) return false
-        return cnpj.calculateCheckDigits(12) == cnpj.substring(12).toInt()
-    }
 
-    private fun String.calculateCheckDigits(length: Int): Int {
-        val weights = (2..9).toList().reversed() + (2..9).toList()
-        val firstDigit = this.take(length).map { it.toString().toInt() }
-            .reversed()
-            .mapIndexed { index, num -> num * weights[index] }
-            .sum()
-            .let { 11 - (it % 11) }
-            .let { if (it >= 10) 0 else it }
-
-        val secondDigit = (this.take(length) + firstDigit).map { it.toString().toInt() }
-            .reversed()
-            .mapIndexed { index, num -> num * weights[index] }
-            .sum()
-            .let { 11 - (it % 11) }
-            .let { if (it >= 10) 0 else it }
-
-        return firstDigit * 10 + secondDigit
+        val digit1 = calculateDigit(cnpj.substring(0, 12), cnpjMultipliers)
+        val digit2 = calculateDigit(cnpj.substring(0, 12) + digit1, cnpjMultipliers)
+        return cnpj == cnpj.substring(0, 12) + digit1.toString() + digit2.toString()
     }
 }

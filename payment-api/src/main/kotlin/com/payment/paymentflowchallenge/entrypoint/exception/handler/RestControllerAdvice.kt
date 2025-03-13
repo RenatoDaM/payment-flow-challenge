@@ -1,24 +1,25 @@
-package com.payment.paymentflowchallenge.core.exception.handler
+package com.payment.paymentflowchallenge.entrypoint.exception.handler
 
+import com.payment.paymentflowchallenge.entrypoint.exception.ResourceAlreadyExistsException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.reactive.function.client.WebClientResponseException
-import org.springframework.web.reactive.result.method.annotation.ResponseEntityExceptionHandler
 
 
 @RestControllerAdvice
-class RestControllerAdvice: ResponseEntityExceptionHandler() {
+class RestControllerAdvice {
     private final val log: Logger = LoggerFactory.getLogger(this.javaClass)
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    protected fun handleNotFound(ex: MethodArgumentNotValidException, request: WebRequest): ProblemDetail {
+    fun handleNotFound(ex: MethodArgumentNotValidException, request: WebRequest): ProblemDetail {
         val problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "The request was processed, but one or more fields contain invalid values")
         problemDetail.title = "Validation Error"
         val errorDetails: MutableList<Map<String, String?>> = ArrayList()
@@ -55,6 +56,14 @@ class RestControllerAdvice: ResponseEntityExceptionHandler() {
         return problemDetail
     }
 
+    @ExceptionHandler(ResourceAlreadyExistsException::class)
+    fun handleResourceAlreadyExistsException(ex: ResourceAlreadyExistsException): ProblemDetail {
+        val problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Resource already exists")
+        problemDetail.detail = ex.localizedMessage
+        problemDetail.title = "Conflict Error"
+        return problemDetail
+    }
+
     @ExceptionHandler(OptimisticLockingFailureException::class)
     fun handleOptimisticLockingFailureException(ex: OptimisticLockingFailureException): ProblemDetail {
         log.error("Optimistic Locking error", ex)
@@ -70,4 +79,25 @@ class RestControllerAdvice: ResponseEntityExceptionHandler() {
     """.trimIndent()
         return problemDetail
     }
+
+    @ExceptionHandler(Exception::class)
+    fun handleGeneralException(ex: Exception): ProblemDetail {
+        log.error("Unexpected error occurred", ex)
+
+        val problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred.")
+        problemDetail.title = "Internal Server Error"
+        problemDetail.detail = "No further details available"
+        return problemDetail
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleGeneralException(ex: HttpMessageNotReadableException): ProblemDetail {
+        log.error("HTTP Message Not Readable", ex)
+
+        val problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "HTTP Message Not Readable")
+        problemDetail.title = "HTTP Message Not Readable"
+        problemDetail.detail = ex.message
+        return problemDetail
+    }
+
 }
