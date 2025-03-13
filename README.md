@@ -62,6 +62,7 @@ Implementation:
 - R2DBC
 - Optimistic Locking
 - HATEOAS
+- Circuit Breaker
 
 Tests:
 
