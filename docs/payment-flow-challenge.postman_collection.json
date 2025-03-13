@@ -1,0 +1,128 @@
+{
+	"info": {
+		"_postman_id": "95e2265f-783e-46ed-9d86-f95498fbb439",
+		"name": "payment-flow-challenge",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23766790"
+	},
+	"item": [
+		{
+			"name": "external-services",
+			"item": [
+				{
+					"name": "authorize",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://util.devi.tools/api/v2/authorize",
+							"protocol": "https",
+							"host": [
+								"util",
+								"devi",
+								"tools"
+							],
+							"path": [
+								"api",
+								"v2",
+								"authorize"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "notify",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "https://util.devi.tools/api/v1/notify",
+							"protocol": "https",
+							"host": [
+								"util",
+								"devi",
+								"tools"
+							],
+							"path": [
+								"api",
+								"v1",
+								"notify"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "transfer",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"value\": 1.00,\r\n  \"payer\": 1,\r\n  \"payee\": 3\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/transfers",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"transfers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"fullName\": \"{{$randomFullName}}\",\r\n  \"documentNumber\": \"76198546063\",\r\n  \"email\": \"{{$randomUserName}}{{$randomUUID}}@gmail.com\",\r\n  \"password\": \"random-password\",\r\n  \"role\": \"COMMON\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/v1/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"v1",
+						"users"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
